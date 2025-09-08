@@ -1,0 +1,67 @@
+<section class="tab-content space-y-4" id="pricing">
+<fieldset class="border rounded-lg p-4">
+<legend class="px-2 font-semibold">Press Defaults</legend>
+<div class="grid grid-cols-2 gap-3 text-sm">
+<label>Click – B/W ($/side) <input class="mt-1 w-full border rounded-md p-2" id="clickBW" step="0.001" type="number" value="0.03"/></label>
+<label>Click – Color ($/side) <input class="mt-1 w-full border rounded-md p-2" id="clickColor" step="0.001" type="number" value="0.09"/></label>
+<label>Waste allowance (%) <input class="mt-1 w-full border rounded-md p-2" id="wastePct" step="0.5" type="number" value="3"/></label>
+<label>Min make-ready (sheets) <input class="mt-1 w-full border rounded-md p-2" id="minMR" step="1" type="number" value="25"/></label>
+</div>
+</fieldset>
+<fieldset class="border rounded-lg p-4">
+<legend class="px-2 font-semibold">Overhead Model</legend>
+<div class="grid grid-cols-2 gap-3 text-sm">
+<label class="col-span-2">Method
+                <select class="mt-1 w-full border rounded-md p-2" id="overheadMode">
+<option value="percent">Percent of cost</option>
+<option value="flat">Flat per job</option>
+<option value="perSheet">Per sheet (all sheets)</option>
+</select>
+</label>
+<label>% or $ per job <input class="mt-1 w-full border rounded-md p-2" id="overheadValue" step="0.01" type="number" value="10"/></label>
+<label>$ per sheet <input class="mt-1 w-full border rounded-md p-2" id="overheadPerSheet" step="0.001" type="number" value="0.00"/></label>
+<label>Job-level Setup ($ flat) <input class="mt-1 w-full border rounded-md p-2" id="jobSetup" step="0.01" type="number" value="20"/></label>
+</div>
+</fieldset>
+<fieldset class="border rounded-lg p-4">
+<legend class="px-2 font-semibold">Pricing Method</legend>
+<div class="grid grid-cols-2 gap-3 text-sm">
+<label>Mode
+                <select class="mt-1 w-full border rounded-md p-2" id="priceMode">
+<option value="markup">Use Markup % (default)</option>
+<option value="margin">Meet Target Margin %</option>
+</select>
+</label>
+<label>Markup % <input class="mt-1 w-full border rounded-md p-2" id="markupPct" step="0.1" type="number" value="20"/></label>
+<label>Target Margin % <input class="mt-1 w-full border rounded-md p-2" id="targetMarginPct" step="0.1" type="number" value="25"/></label>
+</div>
+</fieldset>
+<fieldset class="border rounded-lg p-4">
+<legend class="px-2 font-semibold">Tax, Shipping &amp; Terms</legend>
+<div class="grid grid-cols-2 gap-3 text-sm">
+<label>Tax Rate (%) <input class="mt-1 w-full border rounded-md p-2" id="taxRate" step="0.01" type="number" value="0"/></label>
+<label>Shipping ($) <input class="mt-1 w-full border rounded-md p-2" id="shippingAmt" step="0.01" type="number" value="0"/></label>
+<label class="col-span-2">Payment Terms / Notes <textarea class="mt-1 w-full border rounded-md p-2" id="termsText" rows="2">Net 15. Prices valid 30 days. Freight extra if not specified.</textarea></label>
+</div>
+</fieldset>
+<div class="flex gap-2 no-print">
+<button class="px-3 py-2 rounded-lg bg-emerald-600 text-white" id="btnRecalc">Recalculate</button>
+<button class="px-3 py-2 rounded-lg bg-indigo-600 text-white" id="btnBook">Book Job</button>
+<button class="px-3 py-2 rounded-lg bg-amber-600 text-white" id="btnUndoBooking">Undo Last Booking</button>
+</div>
+<div class="mt-3 bg-emerald-50 rounded-lg p-4">
+<div class="text-emerald-800 font-semibold mb-2">Totals (All Parts)</div>
+<dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+<dt>Paper</dt><dd class="text-right" id="sumPaper">—</dd>
+<dt>Press</dt><dd class="text-right" id="sumPress">—</dd>
+<dt>Finishing</dt><dd class="text-right" id="sumFinishing">—</dd>
+<dt>Per‑part Setup</dt><dd class="text-right" id="sumPartSetup">—</dd>
+<dt>Job Setup</dt><dd class="text-right" id="sumJobSetup">—</dd>
+<dt>Overhead</dt><dd class="text-right" id="sumOverhead">—</dd>
+<dt class="font-semibold">Total Cost</dt><dd class="text-right font-semibold" id="sumCost">—</dd>
+<dt class="font-bold text-lg">Selling Price</dt><dd class="text-right font-bold text-lg" id="sumSell">—</dd>
+<dt>Gross Profit</dt><dd class="text-right" id="sumProfit">—</dd>
+<dt>Margin %</dt><dd class="text-right" id="sumMargin">—</dd>
+</dl>
+</div>
+</section>

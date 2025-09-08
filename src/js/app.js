@@ -1,0 +1,297 @@
+// ===== State =====
+    const state = { parts: [], inventory: [], customers: {}, catalog: [], templates: [], pendingTemplate: null, logoDataUrl: null, adjustments: [], shippingProfiles: [ {id:'pickup', name:'Pickup', amount:0}, {id:'ups_ground', name:'UPS Ground (est.)', amount:12}, {id:'fedex_ground', name:'FedEx Ground (est.)', amount:14}, {id:'local_delivery', name:'Local Delivery (flat)', amount:25} ] };
+
+    // ===== Shortcuts =====
+    const $ = id => document.getElementById(id);
+    const toNum = (v,d=0)=>{ const n=parseFloat(v); return isFinite(n)?n:d; };
+    const toInt = (v,d=0)=>{ const n=parseInt(v,10); return isFinite(n)?n:d; };
+    const money = v => isFinite(v)? '$'+v.toFixed(2) : '—';
+
+    // ===== Element refs =====
+    const els = {
+      tabs: document.querySelectorAll('.tab-button'), tabContents: document.querySelectorAll('.tab-content'),
+      // setup
+      brandLogo: $('brandLogo'), logoUploadSetup: $('logoUploadSetup'), btnProfileSave: $('btnProfileSave'),
+      coName: $('coName'), coPhone: $('coPhone'), coEmail: $('coEmail'), coAddr1: $('coAddr1'), coAddr2: $('coAddr2'), coCity: $('coCity'), coState: $('coState'), coZip: $('coZip'), qLogo: $('qLogo'),
+      // job customer + shipping + header
+      jobCustomer: $('jobCustomer'), custCompanyInJob: $('custCompanyInJob'), custContactInJob: $('custContactInJob'), custEmailInJob: $('custEmailInJob'), custPhoneInJob: $('custPhoneInJob'),
+      billAddr: $('billAddr'), billCity: $('billCity'), billState: $('billState'), billZip: $('billZip'), shipSame: $('shipSame'), shipAddr: $('shipAddr'), shipCity: $('shipCity'), shipState: $('shipState'), shipZip: $('shipZip'), shipVia: $('shipVia'), shipTracking: $('shipTracking'),
+      jobName: $('jobName'), dueDate: $('dueDate'), jobPO: $('jobPO'), jobStatus: $('jobStatus'), jobRevision: $('jobRevision'), jobNotes: $('jobNotes'),
+      btnSaveCustomerFromJob: $('btnSaveCustomerFromJob'), btnDeleteCustomerFromJob: $('btnDeleteCustomerFromJob'),
+      // parts
+      partsContainer: $('partsContainer'), btnAddPart: $('btnAddPart'), btnRemovePart: $('btnRemovePart'),
+      // pricing
+      clickBW: $('clickBW'), clickColor: $('clickColor'), wastePct: $('wastePct'), minMR: $('minMR'), overheadMode: $('overheadMode'), overheadValue: $('overheadValue'), overheadPerSheet: $('overheadPerSheet'), jobSetup: $('jobSetup'), priceMode: $('priceMode'), markupPct: $('markupPct'), targetMarginPct: $('targetMarginPct'), taxRate: $('taxRate'), shippingAmt: $('shippingAmt'), termsText: $('termsText'),
+      // right side
+      layoutSection: $('layoutSection'), dashboard: $('dashboard'), canvas: $('impositionCanvas'), canvasContainer: document.getElementById('canvas-container'), btnAddTemplate: $('btnAddTemplate'), invWarn: $('invWarn'), dbCost: $('dbCost'), dbSell: $('dbSell'), dbProfit: $('dbProfit'), dbMargin: $('dbMargin'), dbParts: $('dbParts'), dbAlerts: $('dbAlerts'), dashSave: $('dashSave'), dashBook: $('dashBook'), dashUndo: $('dashUndo'), dashQuote: $('dashQuote'),
+      // quote
+      qCompany: $('qCompany'), qContact: $('qContact'), qAddr: $('qAddr'), qNum: $('qNum'), qRev: $('qRev'), qCust: $('qCust'), qDue: $('qDue'), qPO: $('qPO'), qLines: $('qLines'), qSub: $('qSub'), qTax: $('qTax'), qShip: $('qShip'), qTotal: $('qTotal'), qTerms: $('qTerms'), qShipLine: $('qShipLine'),
+      // top buttons
+      btnExportEstimate: $('btnExportEstimate'), btnPrintQuote: $('btnPrintQuote')
+    };
+
+    // ===== Tabs logic =====
+    function showTab(name){ document.querySelectorAll('.tab-button').forEach(x=>x.classList.remove('active')); document.querySelector(`.tab-button[data-tab="${name}"]`)?.classList.add('active'); document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active')); document.getElementById(name)?.classList.add('active'); const showLayout = (name==='parts' || name==='templates'); els.layoutSection.style.display = showLayout ? 'block' : 'none'; els.dashboard.style.display = showLayout ? 'none' : 'block'; }
+    document.querySelectorAll('.tab-button').forEach(b=> b.addEventListener('click',()=> showTab(b.dataset.tab)));
+
+    // ===== Company Profile =====
+    function getProfile(){ return { name: els.coName.value, phone: els.coPhone.value, email: els.coEmail.value, addr1: els.coAddr1.value, addr2: els.coAddr2.value, city: els.coCity.value, state: els.coState.value, zip: els.coZip.value, logo: state.logoDataUrl }; }
+    function setProfile(p){ if(!p) return; els.coName.value=p.name||''; els.coPhone.value=p.phone||''; els.coEmail.value=p.email||''; els.coAddr1.value=p.addr1||''; els.coAddr2.value=p.addr2||''; els.coCity.value=p.city||''; els.coState.value=p.state||''; els.coZip.value=p.zip||''; if(p.logo){ state.logoDataUrl=p.logo; els.brandLogo.src=p.logo; els.qLogo.src=p.logo; } }
+    function companySave(){ localStorage.setItem('dp_company', JSON.stringify(getProfile())); recalc(); alert('Company profile saved.'); }
+    $('btnProfileSave')?.addEventListener('click', companySave);
+    $('logoUploadSetup')?.addEventListener('change', e=>{ const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=ev=>{ state.logoDataUrl=ev.target.result; els.brandLogo.src=state.logoDataUrl; els.qLogo.src=state.logoDataUrl; localStorage.setItem('dp_company', JSON.stringify(getProfile())); }; r.readAsDataURL(f); });
+
+    // ===== Customers (single place: Job tab) =====
+    function customersLoad(){ try{ state.customers = JSON.parse(localStorage.getItem('dp_customers')||'{}'); }catch{ state.customers={}; } renderCustomerSelect(); }
+    function customersSave(){ localStorage.setItem('dp_customers', JSON.stringify(state.customers)); renderCustomerSelect(); }
+    function renderCustomerSelect(){ els.jobCustomer.replaceChildren(); const blank=new Option('— Select —',''); els.jobCustomer.appendChild(blank); Object.keys(state.customers).sort().forEach(k=> els.jobCustomer.appendChild(new Option(k,k))); }
+    function fillCustomerIntoJob(key){ const c=state.customers[key]; if(!c) return; els.custCompanyInJob.value=key; els.custContactInJob.value=c.contact||''; els.custEmailInJob.value=c.email||''; els.custPhoneInJob.value=c.phone||''; els.billAddr.value=c.bill?.a||''; els.billCity.value=c.bill?.c||''; els.billState.value=c.bill?.s||''; els.billZip.value=c.bill?.z||''; els.shipAddr.value=c.ship?.a||''; els.shipCity.value=c.ship?.c||''; els.shipState.value=c.ship?.s||''; els.shipZip.value=c.ship?.z||''; els.shipVia.value=c.shipVia||''; }
+    els.jobCustomer.addEventListener('change',()=>{ const k=els.jobCustomer.value; if(k) fillCustomerIntoJob(k); recalc(); });
+    els.btnSaveCustomerFromJob.addEventListener('click',()=>{ const key=(els.custCompanyInJob.value||'').trim(); if(!key){ alert('Company is required.'); return; } state.customers[key]={ contact: els.custContactInJob.value, email: els.custEmailInJob.value, phone: els.custPhoneInJob.value, bill:{a:els.billAddr.value,c:els.billCity.value,s:els.billState.value,z:els.billZip.value}, ship:{a:els.shipAddr.value,c:els.shipCity.value,s:els.shipState.value,z:els.shipZip.value}, shipVia: els.shipVia.value }; customersSave(); els.jobCustomer.value=key; alert('Customer saved/updated.'); });
+    els.btnDeleteCustomerFromJob.addEventListener('click',()=>{ const key=els.jobCustomer.value||els.custCompanyInJob.value; if(!key || !state.customers[key]) return; if(confirm('Delete customer '+key+'?')){ delete state.customers[key]; customersSave(); els.jobCustomer.value=''; ['custCompanyInJob','custContactInJob','custEmailInJob','custPhoneInJob','billAddr','billCity','billState','billZip','shipAddr','shipCity','shipState','shipZip','shipVia','shipTracking'].forEach(id=> $(id).value=''); recalc(); }
+    });
+    $('shipSame').addEventListener('change',()=>{ if($('shipSame').checked){ $('shipAddr').value=$('billAddr').value; $('shipCity').value=$('billCity').value; $('shipState').value=$('billState').value; $('shipZip').value=$('billZip').value; }});
+
+    // ===== Parts =====
+    function defaultPart(){ return { id: crypto.randomUUID(), name:'Part '+(state.parts.length+1), qty:1000, parentW:18, parentH:12, pieceW:5, pieceH:3, bleed:0.25, gutter:0, margin:0, colorMode:'4/0', paperPerSheet:0.10, overrideClicks:false, clickColor:0.09, clickBW:0.03, priceSource:'manual', stock:'', catalogCode:'', partSetup:0, finishing:{ cut:false, fold:false, staple:false, round:false, pad:false, drill:false }, finRates:{ cut:15, fold:25, staple:0.05, round:30, pad:0.75, drill:15 } }; }
+    function addPart(p){ state.parts.push(p||defaultPart()); renderParts(); recalc(); }
+    function removeSelectedPart(){ const idx=[...els.partsContainer.querySelectorAll('.part-card')].findIndex(c=>c.querySelector('.selPart').checked); if(idx>=0){ state.parts.splice(idx,1); renderParts(); recalc(); } }
+    $('btnAddPart').addEventListener('click',()=>addPart()); $('btnRemovePart').addEventListener('click',()=>removeSelectedPart());
+
+    function renderParts(){ els.partsContainer.innerHTML=''; state.parts.forEach((p,idx)=>{ const card=document.createElement('div'); card.className='part-card border rounded-lg p-3 bg-gray-50'; card.innerHTML=`
+        <div class="flex items-center justify-between"><div class="font-semibold">${p.name}</div><label class="text-xs inline-flex items-center gap-1"><input type="radio" name="selPart" class="selPart" ${idx===0?'checked':''}/> Select</label></div>
+        <div class="grid grid-cols-3 gap-2 text-sm mt-2">
+          <label class="col-span-2">Name <input value="${p.name}" data-k="name" class="mt-1 w-full border rounded-md p-2"/></label>
+          <label>Qty <input type="number" value="${p.qty}" data-k="qty" class="mt-1 w-full border rounded-md p-2"/></label>
+          <label>Parent W (in) <input type="number" step="0.125" value="${p.parentW}" data-k="parentW" class="mt-1 w-full border rounded-md p-2"/></label>
+          <label>Parent H (in) <input type="number" step="0.125" value="${p.parentH}" data-k="parentH" class="mt-1 w-full border rounded-md p-2"/></label>
+          <label>Piece W (in) <input type="number" step="0.125" value="${p.pieceW}" data-k="pieceW" class="mt-1 w-full border rounded-md p-2"/></label>
+          <label>Piece H (in) <input type="number" step="0.125" value="${p.pieceH}" data-k="pieceH" class="mt-1 w-full border rounded-md p-2"/></label>
+          <label>Bleed (in) <input type="number" step="0.125" value="${p.bleed}" data-k="bleed" class="mt-1 w-full border rounded-md p-2"/></label>
+          <label>Gutter (in) <input type="number" step="0.0625" value="${p.gutter}" data-k="gutter" class="mt-1 w-full border rounded-md p-2"/></label>
+          <label>Margin (in) <input type="number" step="0.125" value="${p.margin}" data-k="margin" class="mt-1 w-full border rounded-md p-2"/></label>
+          <label>Color mode
+            <select data-k="colorMode" class="mt-1 w-full border rounded-md p-2">
+              <option ${p.colorMode==='4/0'?'selected':''}>4/0</option>
+              <option ${p.colorMode==='4/4'?'selected':''}>4/4</option>
+              <option ${p.colorMode==='4/1'?'selected':''}>4/1</option>
+              <option ${p.colorMode==='1/1'?'selected':''}>1/1</option>
+              <option ${p.colorMode==='1/0'?'selected':''}>1/0</option>
+            </select>
+          </label>
+          <label>Paper $/sheet <input type="number" step="0.0001" value="${p.paperPerSheet}" data-k="paperPerSheet" class="mt-1 w-full border rounded-md p-2"/></label>
+          <label>Setup ($ flat) <input type="number" step="0.01" value="${p.partSetup}" data-k="partSetup" class="mt-1 w-full border rounded-md p-2"/></label>
+          <label class="col-span-3 flex items-center gap-2"><input type="checkbox" ${p.overrideClicks?'checked':''} data-k="overrideClicks"/> Override click rates</label>
+          <label>Color click <input type="number" step="0.001" value="${p.clickColor}" data-k="clickColor" class="mt-1 w-full border rounded-md p-2"/></label>
+          <label>B/W click <input type="number" step="0.001" value="${p.clickBW}" data-k="clickBW" class="mt-1 w-full border rounded-md p-2"/></label>
+        </div>`;
+      card.querySelectorAll('[data-k]').forEach(inp=>{ inp.addEventListener('input',()=>{ const k=inp.dataset.k; let v=inp.type==='checkbox'? inp.checked : inp.value; if(['qty','parentW','parentH','pieceW','pieceH','bleed','gutter','margin','paperPerSheet','clickColor','clickBW','partSetup'].includes(k)) v=toNum(v,0); if(k.startsWith('fin_')){} else { p[k]=v; } recalc(); }); });
+      els.partsContainer.appendChild(card); }); }
+
+    // ===== Templates (minimal: list + builder + preview → add) =====
+    function templatesLoad(){ try{ state.templates = JSON.parse(localStorage.getItem('dp_templates')||'[]'); }catch{ state.templates=[]; }
+      if(!state.templates.length){ state.templates=[ {id:crypto.randomUUID(), name:'Business Cards 2×3.5 on 12×18', qty:500, parentW:12, parentH:18, pieceW:3.5, pieceH:2, bleed:0.125, gutter:0, margin:0, colorMode:'4/4'}, {id:crypto.randomUUID(), name:'Postcard 4×6 on 13×19', qty:1000, parentW:13, parentH:19, pieceW:6, pieceH:4, bleed:0.125, gutter:0, margin:0, colorMode:'4/4'} ]; localStorage.setItem('dp_templates', JSON.stringify(state.templates)); }
+      renderTemplates(); }
+    function renderTemplates(){ const list=$('tplList'); list.innerHTML=''; state.templates.forEach(t=>{ const b=document.createElement('button'); b.className='px-3 py-2 rounded-lg bg-slate-700 text-white text-left hover:bg-slate-800'; b.innerHTML=`<div class='font-semibold'>${t.name}</div><div class='text-xs text-slate-200'>${t.qty} pcs · ${t.colorMode} · ${t.pieceW}×${t.pieceH}" on ${t.parentW}×${t.parentH}"</div>`; b.addEventListener('click',()=> showTemplatePreview({ ...defaultPart(), name:t.name, qty:t.qty, parentW:t.parentW, parentH:t.parentH, pieceW:t.pieceW, pieceH:t.pieceH, bleed:t.bleed, gutter:t.gutter, margin:t.margin, colorMode:t.colorMode })); list.appendChild(b); }); }
+    function showTemplatePreview(part){ state.pendingTemplate=part; const imp=computeImposition(part); drawLayout(part,imp); els.btnAddTemplate.classList.remove('hidden'); els.btnAddTemplate.onclick=()=>{ addPart({...part, id: crypto.randomUUID()}); state.pendingTemplate=null; els.btnAddTemplate.classList.add('hidden'); showTab('parts'); }; showTab('templates'); }
+
+    // ===== Inventory =====
+    function invSave(){ localStorage.setItem('dp_inventory', JSON.stringify(state.inventory)); renderInventory(); }
+    function invLoad(){ try{ state.inventory = JSON.parse(localStorage.getItem('dp_inventory')||'[]'); }catch{ state.inventory=[]; } renderInventory(); }
+    function renderInventory(){ const tbody=$('invTable'); tbody.innerHTML=''; if(!state.inventory.length){ tbody.innerHTML='<tr><td colspan="5" class="py-3 text-center text-gray-500">No inventory yet.</td></tr>'; return; } state.inventory.forEach((r,i)=>{ const tr=document.createElement('tr'); tr.className='odd:bg-white even:bg-gray-50 hover:bg-slate-50'; tr.innerHTML=`<td class='py-2 px-2'>${r.stock}</td><td class='py-2 px-2'>${r.size}</td><td class='py-2 px-2 text-right'>${r.sheets}</td><td class='py-2 px-2 text-right'>${r.reorder}</td><td class='py-2 px-2 text-right space-x-2'><button class='px-2 py-1 text-xs rounded bg-slate-200 hover:bg-slate-300' data-act='edit'>Edit</button><button class='px-2 py-1 text-xs rounded bg-rose-200 hover:bg-rose-300' data-act='delete'>Delete</button></td>`; tr.querySelector('[data-act="edit"]').addEventListener('click',()=>{ $('invStock').value=r.stock; $('invSize').value=r.size; $('invSheets').value=r.sheets; $('invReorder').value=r.reorder; }); tr.querySelector('[data-act="delete"]').addEventListener('click',()=>{ if(confirm('Delete this stock from inventory?')){ state.inventory.splice(i,1); invSave(); }}); tbody.appendChild(tr); }); }
+
+    // ===== Math: imposition & pricing (kept from V11) =====
+    function modeToSides(mode){ switch(mode){ case '4/4': return {color:2,bw:0}; case '4/1': return {color:1,bw:1}; case '1/1': return {color:0,bw:2}; case '1/0': return {color:0,bw:1}; default: return {color:1,bw:0}; } }
+    function computeImposition(p){ const effW=Math.max(0, p.parentW-2*p.margin); const effH=Math.max(0, p.parentH-2*p.margin); const w=p.pieceW+2*p.bleed; const h=p.pieceH+2*p.bleed; function pack(W,H){ if(W<=0||H<=0) return {cols:0,rows:0,ups:0,effW:W,effH:H}; const cols=Math.floor((effW+p.gutter)/(W+p.gutter)); const rows=Math.floor((effH+p.gutter)/(H+p.gutter)); return {cols,rows,ups:cols*rows, effW:W, effH:H}; } const a=pack(w,h), b=pack(h,w); return (a.ups>=b.ups)?{...a,rot:0}:{...b,rot:90}; }
+    function computeNeeds(){ const needs=[]; const waste=toNum($('wastePct').value,0)/100; const minMR=toInt($('minMR').value,0); state.parts.forEach(part=>{ const imp=computeImposition(part); const ups=Math.max(0,imp.ups||0); const rawSheets= ups>0 ? Math.ceil(part.qty/ups) : 0; const sheets=rawSheets + (ups>0 ? Math.max(minMR, Math.ceil(rawSheets*waste)) : 0); needs.push({ part, imp, ups, sheets }); }); return needs; }
+    const ctx = $('impositionCanvas').getContext('2d');
+    function drawLayout(p,imp){ const parentW=p.parentW, parentH=p.parentH; const aspect=parentH/parentW; document.getElementById('canvas-container').style.paddingBottom=`${aspect*100}%`; const rect=$('impositionCanvas').getBoundingClientRect(); $('impositionCanvas').width=rect.width; $('impositionCanvas').height=rect.height; const scale=Math.min($('impositionCanvas').width/parentW, $('impositionCanvas').height/parentH); const offX=($('impositionCanvas').width-parentW*scale)/2; const offY=($('impositionCanvas').height-parentH*scale)/2; ctx.clearRect(0,0,$('impositionCanvas').width,$('impositionCanvas').height); ctx.strokeStyle='#94a3b8'; ctx.lineWidth=2; ctx.strokeRect(offX,offY,parentW*scale,parentH*scale); const safeX=offX+p.margin*scale, safeY=offY+p.margin*scale; const safeW=(parentW-2*p.margin)*scale, safeH=(parentH-2*p.margin)*scale; ctx.setLineDash([6,4]); ctx.strokeStyle='#cbd5e1'; ctx.strokeRect(safeX,safeY,safeW,safeH); ctx.setLineDash([]); if(!imp || imp.ups===0){ ctx.fillStyle='#fef2f2'; ctx.fillRect(safeX, safeY, safeW, safeH); return; } const cols=imp.cols, rows=imp.rows; const cellW=imp.effW*scale, cellH=imp.effH*scale; for(let i=0;i<cols;i++){ for(let j=0;j<rows;j++){ const x=safeX+i*(cellW+p.gutter*scale); const y=safeY+j*(cellH+p.gutter*scale); ctx.fillStyle='rgba(59,130,246,0.15)'; ctx.fillRect(x,y,cellW,cellH); ctx.strokeStyle='#2563eb'; ctx.lineWidth=1; ctx.strokeRect(x+p.bleed*scale,y+p.bleed*scale,cellW-2*p.bleed*scale,cellH-2*p.bleed*scale); } } }
+
+    // ===== Totals + Quote + Dashboard =====
+    function partCostOnly(p,n){ const s=modeToSides(p.colorMode); const rateC=p.overrideClicks?p.clickColor:toNum($('clickColor').value); const rateB=p.overrideClicks?p.clickBW:toNum($('clickBW').value); const press = n.sheets*s.color*rateC + n.sheets*s.bw*rateB; const paper=n.sheets*p.paperPerSheet; let fin=0; if(p.finishing?.cut) fin+=15; if(p.finishing?.fold) fin+=25; if(p.finishing?.round) fin+=30; if(p.finishing?.drill) fin+=15; if(p.finishing?.pad) fin+=0.75*Math.ceil(p.qty/50); if(p.finishing?.staple) fin+=0.05*p.qty; return paper+press+fin+toNum(p.partSetup,0); }
+    function recalc(){ const needs=computeNeeds(); const active=document.querySelector('.tab-button.active')?.dataset.tab; if(active==='parts' || active==='templates'){ const src = active==='templates' && state.pendingTemplate ? state.pendingTemplate : (needs[0]?.part); const imp = active==='templates' && state.pendingTemplate ? computeImposition(state.pendingTemplate) : (needs[0]?.imp); if(src && imp){ drawLayout(src,imp); const inv=invFind(src); if(inv && (needs[0]?.ups||0)>0 && inv.sheets < (needs[0]?.sheets||0)){ $('invWarn').innerHTML = `<span class='text-rose-700'>Need ${(needs[0]?.sheets||0)} sheets; have ${inv.sheets} (${inv.stock} ${inv.size}).</span>`; } else { $('invWarn').innerHTML=''; } } [...$('partsContainer').querySelectorAll('.part-card')].forEach((card,i)=>{ const p=state.parts[i]; const imp=computeImposition(p); const bad=(imp.ups===0); card.querySelectorAll('[data-k="pieceW"],[data-k="pieceH"],[data-k="bleed"],[data-k="gutter"],[data-k="margin"],[data-k="parentW"],[data-k="parentH"]').forEach(inp=> inp.classList.toggle('bad', bad)); }); }
+      // totals
+      let tPaper=0,tPress=0,tFin=0,tPartSetup=0,totalSheets=0; const jbC=toNum($('clickColor').value), jbB=toNum($('clickBW').value);
+      needs.forEach(n=>{ const p=n.part; const s=modeToSides(p.colorMode); const rateC=p.overrideClicks?p.clickColor:jbC; const rateB=p.overrideClicks?p.clickBW:jbB; const press = n.sheets*s.color*rateC + n.sheets*s.bw*rateB; const paper = n.sheets*p.paperPerSheet; let fin=0; if(p.finishing?.cut) fin+=15; if(p.finishing?.fold) fin+=25; if(p.finishing?.round) fin+=30; if(p.finishing?.drill) fin+=15; if(p.finishing?.pad) fin+=0.75*Math.ceil(p.qty/50); if(p.finishing?.staple) fin+=0.05*p.qty; tPaper+=paper; tPress+=press; tFin+=fin; tPartSetup+=toNum(p.partSetup,0); totalSheets+=n.sheets; });
+      const jobSetup=toNum($('jobSetup').value,0); let overhead=0; const mode=$('overheadMode').value; if(mode==='percent'){ const pct=toNum($('overheadValue').value,0)/100; overhead=(tPaper+tPress+tFin+tPartSetup+jobSetup)*pct; } else if(mode==='flat'){ overhead=toNum($('overheadValue').value,0); } else { overhead=toNum($('overheadPerSheet').value,0)*totalSheets; }
+      const totalCost=tPaper+tPress+tFin+tPartSetup+jobSetup+overhead; let sellBase=0; if($('priceMode').value==='margin'){ const m=toNum($('targetMarginPct').value,0)/100; sellBase=(m>=1? totalCost : totalCost/(1-m)); } else { const mu=toNum($('markupPct').value,0)/100; sellBase=totalCost*(1+mu); }
+      const ship=toNum($('shippingAmt').value,0); const tax = sellBase*(toNum($('taxRate').value,0)/100); const grand = sellBase+tax+ship; const profit=sellBase-totalCost; const margin= sellBase>0? (profit/sellBase*100):0;
+      // totals ui
+      $('sumPaper').textContent=money(tPaper); $('sumPress').textContent=money(tPress); $('sumFinishing').textContent=money(tFin); $('sumPartSetup').textContent=money(tPartSetup); $('sumJobSetup').textContent=money(jobSetup); $('sumOverhead').textContent=money(overhead); $('sumCost').textContent=money(totalCost); $('sumSell').textContent=money(sellBase); $('sumProfit').textContent=money(profit); $('sumMargin').textContent=margin.toFixed(1)+'%';
+      // quote header
+      const prof=JSON.parse(localStorage.getItem('dp_company')||'null')||{}; $('qCompany').textContent=prof.name||'—'; $('qContact').textContent=[prof.email,prof.phone].filter(Boolean).join(' · '); $('qAddr').textContent=[prof.addr1,prof.addr2,[prof.city,prof.state].filter(Boolean).join(', '),prof.zip].filter(Boolean).join(' · '); if(prof.logo){ $('qLogo').src=prof.logo; $('brandLogo').src=prof.logo; }
+      $('qNum').textContent=jobNumber(); $('qRev').textContent=$('jobRevision').value||'v1'; const cname=$('jobCustomer').value; const cust=state.customers[cname]; $('qCust').textContent = cname? `${cname}${cust?.bill?.a? ' — '+cust.bill.a:''}` : '—'; $('qDue').textContent=$('dueDate').value||'—'; $('qPO').textContent=$('jobPO').value||'—'; $('qShipLine').textContent=['Ship to: '+[$('shipAddr').value,$('shipCity').value,$('shipState').value,$('shipZip').value].filter(Boolean).join(', '), $('shipVia').value?('Via: '+$('shipVia').value):'', $('shipTracking').value?('Tracking: '+$('shipTracking').value):''].filter(Boolean).join(' • ');
+      $('qLines').innerHTML=''; const needsForQuote=needs.filter(n=>n.part.qty>0 && n.ups>0); needsForQuote.forEach(n=>{ const p=n.part; const pcost=partCostOnly(p,n); const share = totalCost>0? (pcost/totalCost):(1/needsForQuote.length||1); const partSell=sellBase*share; const unit=partSell/Math.max(1,p.qty); const tr=document.createElement('tr'); tr.innerHTML=`<td class='py-1 pr-2'>${p.name} – ${p.qty} pcs · ${p.colorMode} · ${p.pieceW}×${p.pieceH}" on ${p.parentW}×${p.parentH}"</td><td class='py-1 pr-2 text-right'>${p.qty.toLocaleString()}</td><td class='py-1 pr-2 text-right'>${money(unit)}</td><td class='py-1 pr-2 text-right'>${money(partSell)}</td>`; $('qLines').appendChild(tr); }); $('qSub').textContent=money(sellBase); $('qTax').textContent=money(tax); $('qShip').textContent=money(ship); $('qTotal').textContent=money(grand); $('qTerms').textContent=$('termsText').value||'';
+      // dashboard
+      $('dbCost').textContent=money(totalCost); $('dbSell').textContent=money(sellBase); $('dbProfit').textContent=money(profit); $('dbMargin').textContent=margin.toFixed(1)+'%'; $('dbParts').innerHTML=''; needs.forEach(n=>{ const p=n.part; const s=modeToSides(p.colorMode); const press=n.sheets*s.color*toNum($('clickColor').value) + n.sheets*s.bw*toNum($('clickBW').value); const paper=n.sheets*p.paperPerSheet; const tr=document.createElement('tr'); tr.innerHTML=`<td class='py-1 pr-2'>${p.name}</td><td class='py-1 pr-2 text-right'>${n.ups}</td><td class='py-1 pr-2 text-right'>${n.sheets}</td><td class='py-1 pr-2 text-right'>${money(paper)}</td><td class='py-1 pr-2 text-right'>${money(press)}</td>`; $('dbParts').appendChild(tr); }); let alerts=[]; needs.forEach(n=>{ if(n.ups===0) alerts.push(`${n.part.name}: No fit – adjust size/bleed/gutter/margin.`); const inv=invFind(n.part); if(inv && n.ups>0 && inv.sheets<n.sheets) alerts.push(`Need ${n.sheets} sheets of ${inv.stock} ${inv.size}; have ${inv.sheets}.`); if(!inv) alerts.push(`No inventory match for ${n.part.stock||('Parent '+n.part.parentW+'x'+n.part.parentH)}.`); }); if(!state.parts.length) alerts.push('No parts added.'); if(!$('jobCustomer').value) alerts.push('No customer selected.'); $('dbAlerts').innerHTML = alerts.length? `<div class='rounded-md bg-amber-50 border border-amber-200 p-2 text-amber-800'>${alerts.map(a=>`<div>• ${a}</div>`).join('')}</div>` : '';
+    }
+
+    function invFind(p){ const byStock=state.inventory.find(x=> (x.stock||'').toLowerCase()===(p.stock||'').toLowerCase()); if(byStock) return byStock; const size=`${p.parentW}x${p.parentH}`.toLowerCase(); return state.inventory.find(x=> (x.size||'').toLowerCase()===size); }
+
+    // ===== Booking & Save (minimal) =====
+    function jobNumber(){ const d=new Date(); return [d.getFullYear(), (d.getMonth()+1+'').padStart(2,'0'), (d.getDate()+'').padStart(2,'0')].join(''); }
+    function saveEstimate(){ const data={ when:Date.now(), jobNum:jobNumber(), rev:($('jobRevision').value||'v1'), status:$('jobStatus').value, profile:getProfile(), customer:$('jobCustomer').value, header:{ name:$('jobName').value, due:$('dueDate').value, po:$('jobPO').value, notes:$('jobNotes').value }, addresses:{ bill:{a:$('billAddr').value,c:$('billCity').value,s:$('billState').value,z:$('billZip').value }, ship:{a:$('shipAddr').value,c:$('shipCity').value,s:$('shipState').value,z:$('shipZip').value, via:$('shipVia').value, track:$('shipTracking').value } }, parts: JSON.parse(JSON.stringify(state.parts)), pricing:{ clickBW:toNum($('clickBW').value), clickColor:toNum($('clickColor').value), wastePct:toNum($('wastePct').value), minMR:toInt($('minMR').value), overheadMode:$('overheadMode').value, overheadValue:toNum($('overheadValue').value), overheadPerSheet:toNum($('overheadPerSheet').value), jobSetup:toNum($('jobSetup').value), priceMode:$('priceMode').value, markupPct:toNum($('markupPct').value), targetMarginPct:toNum($('targetMarginPct').value), taxRate:toNum($('taxRate').value), shipping:toNum($('shippingAmt').value), terms:$('termsText').value } };
+      const arr=JSON.parse(localStorage.getItem('dp_estimates')||'[]'); arr.push(data); localStorage.setItem('dp_estimates', JSON.stringify(arr)); alert('Saved as new revision: '+data.jobNum+' '+data.rev); }
+    $('btnExportEstimate').addEventListener('click', saveEstimate); $('dashSave').addEventListener('click', saveEstimate); $('dashQuote').addEventListener('click',()=> showTab('quoteTab'));
+    $('btnPrintQuote').addEventListener('click', ()=>{ showTab('quoteTab'); setTimeout(()=>window.print(), 10); });
+
+    // ===== Input events =====
+    document.addEventListener('input', e=>{ if(e.target.closest('#setup')||e.target.closest('#job')||e.target.closest('#parts')||e.target.closest('#pricing')) recalc(); }); $('btnRecalc').addEventListener('click', recalc);
+
+    // ===== Init =====
+    (function init(){ try{ const p=JSON.parse(localStorage.getItem('dp_company')||'null'); if(p) setProfile(p); }catch{} customersLoad(); invLoad(); templatesLoad(); addPart(); const today=new Date().toISOString().split('T')[0]; $('dueDate').value=today; showTab('job'); recalc(); })();
+
+// ===== Templates: Edit/Delete + Star (v2) =====
+(function(){
+  if (window.__tplCrudV2) return; window.__tplCrudV2 = true;
+
+  const byId = id => (state.templates||[]).find(t => t.id === id);
+  function persist(){ try{ localStorage.setItem('dp_templates', JSON.stringify(state.templates||[])); }catch(e){ console.warn(e); } }
+
+  // --- Star helpers (used below too) ---
+  function countStarred(){ return (state.templates||[]).filter(t=>t.starred).length; }
+  function toggleStar(id){
+    const t = byId(id); if(!t) return;
+    if (!t.starred){
+      if (countStarred() >= 3){ alert('You can star at most 3 templates.'); return; }
+      t.starred = true;
+    } else {
+      t.starred = false;
+    }
+    persist();
+    renderTemplates();
+  }
+
+  // --- Patched renderer: adds Starred area + tiles with a star button ---
+  window.renderTemplates = function(){
+    const list = $('tplList'); if(!list) return;
+    const starredEl = $('tplStarred'); const wrap = $('tplStarredWrap');
+    list.innerHTML = ''; if (starredEl) starredEl.innerHTML='';
+
+    const arr = Array.isArray(state.templates) ? state.templates : [];
+
+    const makeTile = (t) => {
+      const b = document.createElement('button'); b.type='button';
+      b.className = 'w-full p-3 rounded-lg bg-slate-700 text-white text-left hover:bg-slate-800';
+      b.innerHTML = `
+      <div class="flex items-start justify-between gap-2">
+      <div>
+      <div class="font-semibold">${t.name||'Untitled'}</div>
+      <div class="text-xs text-slate-300">${(t.pieceW||0)}×${(t.pieceH||0)} on ${(t.parentW||0)}×${(t.parentH||0)}</div>
+      </div>
+      <button type="button"
+      class="tpl-star text-xl leading-none ${t.starred ? 'text-yellow-400' : 'opacity-40'}"
+      title="${t.starred ? 'Unstar' : 'Star'}"
+      aria-label="Star">★</button>
+      </div>`;
+      b.onclick = ()=>{ if (typeof showTemplatePreview==='function') showTemplatePreview(t); };
+      const star = b.querySelector('.tpl-star');
+      star.onclick = (ev)=>{ ev.stopPropagation(); toggleStar(t.id); };
+      return b;
+    };
+
+    const starred = arr.filter(t=>t.starred);
+    if (wrap) wrap.style.display = starred.length ? '' : 'none';
+    if (starredEl) starred.slice(0,3).forEach(t=> starredEl.appendChild(makeTile(t)));
+    arr.filter(t=>!t.starred).forEach(t=> list.appendChild(makeTile(t)));
+  };
+
+  function tplClearForm(){
+    document.body.dataset.tplEditingId = '';
+    $('tplName') && ($('tplName').value = '');
+    $('tplQty') && ($('tplQty').value = 1000);
+    $('tplPW') && ($('tplPW').value = 12);
+    $('tplPH') && ($('tplPH').value = 18);
+    $('tplW') && ($('tplW').value = 0);
+    $('tplH') && ($('tplH').value = 0);
+    $('tplColor') && ($('tplColor').value = '4/4');
+    $('tplBleed') && ($('tplBleed').value = 0);
+    $('tplGutter') && ($('tplGutter').value = 0);
+    $('tplMargin') && ($('tplMargin').value = 0);
+    $('btnTplSave') && $('btnTplSave').classList.remove('hidden');
+    $('btnTplUpdate') && $('btnTplUpdate').classList.add('hidden');
+    $('btnTplDelete') && $('btnTplDelete').classList.add('hidden');
+  }
+
+  function onTplSave(){
+    const obj = {
+      id: crypto.randomUUID(),
+      name: $('tplName')?.value?.trim() || 'Untitled',
+      qty: toInt($('tplQty')?.value || 0, 0),
+      parentW: toNum($('tplPW')?.value || 0, 0),
+      parentH: toNum($('tplPH')?.value || 0, 0),
+      pieceW: toNum($('tplW')?.value || 0, 0),
+      pieceH: toNum($('tplH')?.value || 0, 0),
+      colorMode: $('tplColor')?.value || '4/4',
+      bleed: toNum($('tplBleed')?.value || 0, 0),
+      gutter: toNum($('tplGutter')?.value || 0, 0),
+      margin: toNum($('tplMargin')?.value || 0, 0),
+      starred: false
+    };
+    state.templates = Array.isArray(state.templates) ? state.templates : [];
+    state.templates.push(obj);
+    persist(); renderTemplates();
+    document.body.dataset.tplEditingId = obj.id;
+    $('btnTplSave')?.classList.add('hidden');
+    $('btnTplUpdate')?.classList.remove('hidden');
+    $('btnTplDelete')?.classList.remove('hidden');
+  }
+
+  function onTplUpdate(){
+    const id = document.body.dataset.tplEditingId;
+    if (!id) return;
+    const idx = (state.templates||[]).findIndex(x => x.id === id);
+    if (idx < 0) return;
+    const old = state.templates[idx] || {};
+    state.templates[idx] = {
+      id,
+      name: $('tplName')?.value?.trim() || old.name || 'Untitled',
+      qty: toInt($('tplQty')?.value || old.qty || 0, 0),
+      parentW: toNum($('tplPW')?.value || old.parentW || 0, 0),
+      parentH: toNum($('tplPH')?.value || old.parentH || 0, 0),
+      pieceW: toNum($('tplW')?.value || old.pieceW || 0, 0),
+      pieceH: toNum($('tplH')?.value || old.pieceH || 0, 0),
+      colorMode: $('tplColor')?.value || old.colorMode || '4/4',
+      bleed: toNum($('tplBleed')?.value || old.bleed || 0, 0),
+      gutter: toNum($('tplGutter')?.value || old.gutter || 0, 0),
+      margin: toNum($('tplMargin')?.value || old.margin || 0, 0),
+      starred: !!old.starred
+    };
+    persist(); renderTemplates();
+  }
+
+  function onTplDelete(){
+    const id = document.body.dataset.tplEditingId;
+    if (!id) return;
+    if (!confirm('Delete this template? This cannot be undone.')) return;
+    state.templates = (state.templates||[]).filter(x => x.id != id);
+    state.pendingTemplate = null;
+    document.body.dataset.tplEditingId = '';
+    persist(); renderTemplates();
+    tplClearForm();
+  }
+
+  function attachTplHandlers(){
+    const bind = (id, fn) => { const el=$(id); if(el){ el.onclick=null; el.addEventListener('click', fn); } };
+    bind('btnTplSave', onTplSave);
+    bind('btnTplUpdate', onTplUpdate);
+    bind('btnTplDelete', onTplDelete);
+    bind('btnTplClear', tplClearForm);
+  }
+
+  // Keep preview hook: selecting a tile goes to edit mode
+  if (typeof showTemplatePreview === 'function' && !window.__tplPreviewPatchedV2){
+    window.__tplPreviewPatchedV2 = true;
+    const _orig = showTemplatePreview;
+    window.showTemplatePreview = function(part){
+      try { _orig(part); } catch(e){}
+      document.body.dataset.tplEditingId = part?.id || '';
+      $('btnTplSave')?.classList.add('hidden');
+      $('btnTplUpdate')?.classList.remove('hidden');
+      $('btnTplDelete')?.classList.remove('hidden');
+    }
+  }
+
+  attachTplHandlers();
+  renderTemplates();
+})();
