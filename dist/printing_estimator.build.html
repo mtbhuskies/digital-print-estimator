@@ -15,57 +15,74 @@ body { font-family: 'Inter', sans-serif; }
     .tab-content.active { display: block; }
     .bad { outline: 2px solid #ef4444; outline-offset: 0; background: #fff1f2; }
     @media print { body * { visibility: hidden; } #quote, #quote * { visibility: visible; } #quote { position: absolute; inset: 0; width: 100%; margin: 0; box-shadow: none; } }
-    +/* --- Unified Buttons ----------------------------------------------------- */
-    +:root{
-    +  --rw-btn-h: 40px;
-    +  --rw-btn-px: 16px;
-    +  --rw-btn-gap: 8px;
-    +  --rw-btn-radius: 10px;
-    +  --rw-btn-weight: 600;
-    +  --rw-btn-fs: 0.875rem; /* ~text-sm */
-    +
-    +  /* Map to your palette if you like; these match existing emerald/rose */
-    +  --rw-positive: #059669;       /* emerald-600 */
-    +  --rw-positive-hover: #047857; /* emerald-700 */
-    +  --rw-danger: #e11d48;         /* rose-600 */
-    +  --rw-danger-hover: #be123c;   /* rose-700 */
-    +
-    +  --rw-neutral-fg: #111827;
-    +  --rw-neutral-bg: #ffffff;
-    +  --rw-neutral-border: #d1d5db;
-    +  --rw-on-dark: #ffffff;
-    +  --rw-focus: rgba(15,23,42,.7); /* slate-ish */
-    +}
-    +
-    +.rw-btn{
-    +  appearance:none; display:inline-flex; align-items:center; justify-content:center; gap:var(--rw-btn-gap);
-    +  height:var(--rw-btn-h); padding:0 var(--rw-btn-px);
-    +  border-radius:var(--rw-btn-radius); border:1px solid transparent;
-    +  font-weight:var(--rw-btn-weight); font-size:var(--rw-btn-fs); line-height:1;
-    +  cursor:pointer; user-select:none; text-decoration:none;
-    +  transition:background-color .15s, border-color .15s, box-shadow .15s, transform .02s, opacity .15s;
-    +  box-shadow: 0 1px 2px rgba(0,0,0,.05);
-    +}
-    +.rw-btn:focus-visible{ outline:2px solid var(--rw-focus); outline-offset:2px; }
-    +.rw-btn:active{ transform: translateY(1px); }
-    +.rw-btn:disabled{ opacity:.6; cursor:not-allowed; }
-    +
-    +.rw-btn--positive{ background:var(--rw-positive); color:var(--rw-on-dark); }
-    +.rw-btn--positive:hover:not(:disabled){ background:var(--rw-positive-hover); }
-    +
-    +.rw-btn--danger{ background:var(--rw-danger); color:var(--rw-on-dark); }
-    +.rw-btn--danger:hover:not(:disabled){ background:var(--rw-danger-hover); }
-    +
-    +.rw-btn--secondary{
-    +  background:var(--rw-neutral-bg); color:var(--rw-neutral-fg); border-color:var(--rw-neutral-border);
-    +}
-    +.rw-btn--secondary:hover:not(:disabled){ background:#f9fafb; border-color:#cbd5e1; }
-    +
-    +.rw-btn .rw-icon{ width:18px; height:18px; flex:0 0 auto; color:currentColor; }
-    
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com"></script>
+<style id="unified-buttons">
+  :root{
+    --btn-radius: 0.5rem;
+    --btn-px: 0.75rem;
+    --btn-py: 0.5rem;
+    --btn-fs: 0.875rem; /* text-sm */
+    --btn-shadow: 0 1px 2px rgba(0,0,0,.05);
+    --green: #059669;   /* emerald-600 */
+    --green-h: #047857; /* emerald-700 */
+    --red:   #e11d48;   /* rose-600 */
+    --red-h: #be123c;   /* rose-700 */
+  }
+
+  /* Base unified button style: all tabs EXCEPT Job, plus header buttons */
+  .tab-content:not(#job) button,
+  header .no-print button {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: var(--btn-py) var(--btn-px);
+    border-radius: var(--btn-radius);
+    font-weight: 600; font-size: var(--btn-fs); line-height: 1.25rem;
+    border: 1px solid transparent;
+    box-shadow: var(--btn-shadow);
+    transition: background-color .15s ease, color .15s ease, opacity .15s ease, transform .06s ease;
+  }
+  .tab-content:not(#job) button:active,
+  header .no-print button:active { transform: translateY(1px); }
+  .tab-content:not(#job) button:disabled,
+  header .no-print button:disabled { opacity: .6; cursor: not-allowed; }
+  .tab-content:not(#job) button:focus-visible,
+  header .no-print button:focus-visible { outline: 2px solid rgba(15,23,42,.6); outline-offset: 1px; } /* slate-900-ish */
+
+  /* POSITIVE actions → green (match by common ID keywords) */
+  .tab-content:not(#job) button[id*="Save"],
+  .tab-content:not(#job) button[id*="Update"],
+  .tab-content:not(#job) button[id*="Recalc"],
+  .tab-content:not(#job) button[id*="Add"],
+  .tab-content:not(#job) button[id*="Print"],
+  .tab-content:not(#job) button[id*="Export"],
+  .tab-content:not(#job) button[id*="Create"],
+  .tab-content:not(#job) button[id*="Upload"],
+  header .no-print button {
+    background-color: var(--green); color: #fff;
+  }
+  .tab-content:not(#job) button[id*="Save"]:hover,
+  .tab-content:not(#job) button[id*="Update"]:hover,
+  .tab-content:not(#job) button[id*="Recalc"]:hover,
+  .tab-content:not(#job) button[id*="Add"]:hover,
+  .tab-content:not(#job) button[id*="Print"]:hover,
+  .tab-content:not(#job) button[id*="Export"]:hover,
+  .tab-content:not(#job) button[id*="Create"]:hover,
+  .tab-content:not(#job) button[id*="Upload"]:hover,
+  header .no-print button:hover { background-color: var(--green-h); }
+
+  /* NEGATIVE actions → red (match by common ID keywords) */
+  .tab-content:not(#job) button[id*="Delete"],
+  .tab-content:not(#job) button[id*="Remove"],
+  .tab-content:not(#job) button[id*="Clear"],
+  .tab-content:not(#job) button[id*="Cancel"] {
+    background-color: var(--red); color: #fff;
+  }
+  .tab-content:not(#job) button[id*="Delete"]:hover,
+  .tab-content:not(#job) button[id*="Remove"]:hover,
+  .tab-content:not(#job) button[id*="Clear"]:hover,
+  .tab-content:not(#job) button[id*="Cancel"]:hover { background-color: var(--red-h); }
+</style>
 </head>
 <body>
 
@@ -80,8 +97,8 @@ body { font-family: 'Inter', sans-serif; }
 </div>
 </div>
 <div class="flex gap-2 no-print">
-<button class="rw-btn rw-btn--positive" id="btnExportEstimate">Save Estimate (new rev)</button>
-<button class="rw-btn rw-btn--positive" id="btnPrintQuote">Print Customer Quote</button>
+<button class="px-3 py-2 rounded-lg bg-slate-800 text-white" id="btnExportEstimate">Save Estimate (new rev)</button>
+<button class="px-3 py-2 rounded-lg bg-blue-600 text-white" id="btnPrintQuote">Print Customer Quote</button>
 </div>
 </div>
 </header>
@@ -112,10 +129,10 @@ body { font-family: 'Inter', sans-serif; }
 <label>Postal <input class="mt-1 w-full border rounded-md p-2" id="coZip"/></label>
 </div>
 <div class="mt-3 flex items-center gap-2">
-<label class="rw-btn rw-btn--secondary cursor-pointer">
-  <input accept="image/*" class="hidden" id="logoUploadSetup" type="file"/> Upload Logo
-</label>
-<button class="rw-btn rw-btn--positive" id="btnProfileSave">Save Company Profile</button>
+<label class="px-3 py-2 rounded-lg bg-slate-700 text-white cursor-pointer">
+<input accept="image/*" class="hidden" id="logoUploadSetup" type="file"/> Upload Logo
+              </label>
+<button class="px-3 py-2 rounded-lg bg-slate-800 text-white" id="btnProfileSave">Save Company Profile</button>
 </div>
 </fieldset>
 </section>
@@ -136,8 +153,8 @@ body { font-family: 'Inter', sans-serif; }
 <label>State <input class="mt-1 w-full border rounded-md p-2" id="billState"/></label>
 <label>Zip <input class="mt-1 w-full border rounded-md p-2" id="billZip"/></label>
 <div class="col-span-2 flex gap-2">
-<button class="rw-btn rw-btn--positive" id="btnSaveCustomerFromJob">Save / Update Customer</button>
-<button class="rw-btn rw-btn--danger" id="btnDeleteCustomerFromJob">Delete Customer</button>
+<button class="px-3 py-2 rounded-lg bg-slate-700 text-white" id="btnSaveCustomerFromJob">Save / Update Customer</button>
+<button class="px-3 py-2 rounded-lg bg-rose-600 text-white" id="btnDeleteCustomerFromJob">Delete Customer</button>
 </div>
 </div>
 </fieldset>
@@ -217,10 +234,10 @@ body { font-family: 'Inter', sans-serif; }
 <label>Margin (in) <input class="mt-1 w-full border rounded-md p-2" id="tplMargin" step="0.125" type="number" value="0"/></label>
 </div>
 <div class="mt-3 flex gap-2">
-<button class="rw-btn rw-btn--positive" id="btnTplSave">Save Template</button>
-<button class="rw-btn rw-btn--positive hidden" id="btnTplUpdate">Update</button>
-<button class="rw-btn rw-btn--danger hidden" id="btnTplDelete">Delete</button>
-<button class="rw-btn rw-btn--danger" id="btnTplClear">Clear Form</button>
+<button class="px-3 py-2 rounded-lg bg-emerald-600 text-white" id="btnTplSave">Save Template</button>
+<button class="px-3 py-2 rounded-lg bg-blue-600 text-white hidden" id="btnTplUpdate">Update</button>
+<button class="px-3 py-2 rounded-lg bg-rose-600 text-white hidden" id="btnTplDelete">Delete</button>
+<button class="px-3 py-2 rounded-lg bg-slate-600 text-white" id="btnTplClear">Clear Form</button>
 </div>
 </fieldset>
 </section>
@@ -272,9 +289,9 @@ body { font-family: 'Inter', sans-serif; }
 </div>
 </fieldset>
 <div class="flex gap-2 no-print">
-<button class="rw-btn rw-btn--positive" id="btnRecalc">Recalculate</button>
-<button class="rw-btn rw-btn--positive" id="btnBook">Book Job</button>
-<button class="rw-btn rw-btn--secondary" id="btnUndoBooking">Undo Last Booking</button>
+<button class="px-3 py-2 rounded-lg bg-emerald-600 text-white" id="btnRecalc">Recalculate</button>
+<button class="px-3 py-2 rounded-lg bg-indigo-600 text-white" id="btnBook">Book Job</button>
+<button class="px-3 py-2 rounded-lg bg-amber-600 text-white" id="btnUndoBooking">Undo Last Booking</button>
 </div>
 <div class="mt-3 bg-emerald-50 rounded-lg p-4">
 <div class="text-emerald-800 font-semibold mb-2">Totals (All Parts)</div>
@@ -301,8 +318,8 @@ body { font-family: 'Inter', sans-serif; }
 <label>Size (WxH) <input class="mt-1 w-full border rounded-md p-2" id="invSize" placeholder="13x19"/></label>
 <label>Sheets on hand <input class="mt-1 w-full border rounded-md p-2" id="invSheets" type="number" value="0"/></label>
 <label>Reorder point <input class="mt-1 w-full border rounded-md p-2" id="invReorder" type="number" value="0"/></label>
-<button class="col-span-2 rw-btn rw-btn--positive" id="btnInvAdd">Add / Update</button>
-<button class="rw-btn rw-btn--danger" id="btnInvClear">Clear All</button>
+<button class="col-span-2 px-3 py-2 rounded-lg bg-slate-700 text-white" id="btnInvAdd">Add / Update</button>
+<button class="px-3 py-2 rounded-lg bg-rose-600 text-white" id="btnInvClear">Clear All</button>
 </div>
 <div class="mt-3 overflow-auto">
 <table class="w-full text-sm">
@@ -321,19 +338,19 @@ body { font-family: 'Inter', sans-serif; }
 <legend class="px-2 font-semibold">Paper Catalog</legend>
 <div class="grid grid-cols-4 gap-2 text-sm items-end">
 <label class="col-span-2">WCP Code <input class="mt-1 w-full border rounded-md p-2" id="catCode" placeholder="TR2DDW17100HPC"/></label>
-<button class="rw-btn rw-btn--secondary" id="btnCatOpen">Open WCP Page</button>
-<button class="rw-btn rw-btn--positive" id="btnCatAdd">Add to Catalog (+Inventory)</button>
+<button class="px-3 py-2 rounded-lg bg-slate-600 text-white" id="btnCatOpen">Open WCP Page</button>
+<button class="px-3 py-2 rounded-lg bg-emerald-600 text-white" id="btnCatAdd">Add to Catalog (+Inventory)</button>
 <label class="col-span-2">Name <input class="mt-1 w-full border rounded-md p-2" id="catName" placeholder="Cougar Smooth 100C Digital"/></label>
 <label>Size (WxH) <input class="mt-1 w-full border rounded-md p-2" id="catSize" placeholder="13x19"/></label>
 <label>Sheets/ctn <input class="mt-1 w-full border rounded-md p-2" id="catSheets" type="number" value="500"/></label>
 <label>Price/1000 <input class="mt-1 w-full border rounded-md p-2" id="catPricePerThou" step="0.01" type="number" value="0"/></label>
 <label>Carton Price <input class="mt-1 w-full border rounded-md p-2" id="catCartonPrice" step="0.01" type="number" value="0"/></label>
 <label>$ per sheet (auto) <input class="mt-1 w-full border rounded-md p-2 bg-gray-100" id="catPerSheet" readonly=""/></label>
-<button class="rw-btn rw-btn--secondary" id="btnCatExport">Export CSV</button>
-<label class="rw-btn rw-btn--secondary cursor-pointer text-center">Import CSV
+<button class="px-3 py-2 rounded-lg bg-slate-700 text-white" id="btnCatExport">Export CSV</button>
+<label class="px-3 py-2 rounded-lg bg-slate-700 text-white cursor-pointer text-center">Import CSV
                 <input accept=".csv" class="hidden" id="catImport" type="file"/>
 </label>
-<button class="rw-btn rw-btn--danger" id="btnCatClear">Clear Catalog</button>
+<button class="px-3 py-2 rounded-lg bg-rose-600 text-white" id="btnCatClear">Clear Catalog</button>
 </div>
 <div class="mt-3 overflow-auto">
 <table class="w-full text-sm">
@@ -406,7 +423,7 @@ body { font-family: 'Inter', sans-serif; }
 <canvas id="impositionCanvas"></canvas>
 </div>
 <div class="mt-2 flex items-center gap-2">
-<button class="hidden rw-btn rw-btn--positive" id="btnAddTemplate">Add Template to Job</button>
+<button class="hidden px-3 py-2 rounded-lg bg-emerald-600 text-white" id="btnAddTemplate">Add Template to Job</button>
 <div class="text-xs" id="invWarn"></div>
 </div>
 </section>
@@ -414,10 +431,10 @@ body { font-family: 'Inter', sans-serif; }
 <div class="flex items-center justify-between mb-3">
 <h2 class="text-xl font-semibold">Job Dashboard</h2>
 <div class="flex gap-2">
-<button class="rw-btn rw-btn--positive" id="dashSave">Save</button>
-<button class="rw-btn rw-btn--positive" id="dashBook">Book</button>
-<button class="rw-btn rw-btn--secondary" id="dashUndo">Undo</button>
-<button class="rw-btn rw-btn--positive" id="dashQuote">Quote</button>
+<button class="px-2 py-1 rounded bg-slate-800 text-white text-xs" id="dashSave">Save</button>
+<button class="px-2 py-1 rounded bg-indigo-600 text-white text-xs" id="dashBook">Book</button>
+<button class="px-2 py-1 rounded bg-amber-600 text-white text-xs" id="dashUndo">Undo</button>
+<button class="px-2 py-1 rounded bg-blue-600 text-white text-xs" id="dashQuote">Quote</button>
 </div>
 </div>
 <div class="grid grid-cols-2 gap-2 text-sm">
