@@ -18,14 +18,14 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 <!-- LEFT (2/3) -->
 <aside class="lg:col-span-2 bg-white rounded-xl shadow p-4 self-start">
-<nav class="border-b border-gray-200 mb-4 flex flex-wrap gap-1 no-print">
-<button class="tab-button active" data-tab="setup">Setup</button>
-<button class="tab-button" data-tab="job">Job</button>
-<button class="tab-button" data-tab="parts">Parts</button>
-<button class="tab-button" data-tab="templates">Templates</button>
-<button class="tab-button" data-tab="pricing">Pricing</button>
-<button class="tab-button" data-tab="inventory">Inventory</button>
-<button class="tab-button" data-tab="quoteTab">Quote</button>
+<nav class="rw-tabs flex flex-wrap gap-1 no-print">
+<button class="rw-tab active" data-tab="setup">Setup</button>
+<button class="rw-tab" data-tab="job">Job</button>
+<button class="rw-tab" data-tab="parts">Parts</button>
+<button class="rw-tab" data-tab="templates">Templates</button>
+<button class="rw-tab" data-tab="pricing">Pricing</button>
+<button class="rw-tab" data-tab="inventory">Inventory</button>
+<button class="rw-tab" data-tab="quoteTab">Quote</button>
 </nav>
 <!-- @@include: partials/tabs_setup.html -->
 
@@ -47,7 +47,9 @@
 <section class="bg-white p-4 rounded-xl shadow" id="layoutSection" style="display:none;margin-top:0">
 
     <div class="rw-card__header">
+  <div class="rw-card__header">
   <h2 class="rw-card__title">Layout Diagram</h2>
+</div>
 </div>
   
 <div class="canvas-container bg-gray-100 rounded-lg" id="canvas-container">
@@ -84,13 +86,24 @@
 </table>
 </div>
 <div class="mt-3 text-xs" id="dbAlerts"></div>
-<div class="mt-3 flex gap-2 justify-end">
+<div class="mt-3 flex gap-2 justify-end no-print">
+  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashUndo">Undo</button>
+  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashQuote">Quote</button>
+  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashBook">Book</button>
+  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashSave">Save</button>
+</div>
+<div class="mt-3 flex gap-2 justify-end no-print">
+  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashUndo">Undo</button>
+  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashQuote">Quote</button>
+  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashBook">Book</button>
+  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashSave">Save</button>
+</div>
+<div class="mt-3 flex gap-2 justify-end no-print">
   <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashSave">Save</button>
   <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashBook">Book</button>
   <button class="rw-btn rw-btn--danger    rw-btn--sm" id="dashUndo">Undo</button>
   <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashQuote">Quote</button>
-</div>
-  </section>
+</div></section>
 </main>
 </div>
 <footer class="text-center mt-8 text-gray-500 text-sm">V1.0 Beta</footer>

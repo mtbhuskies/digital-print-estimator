@@ -4,54 +4,49 @@ set -euo pipefail
 CSS="src/css/style.css"
 HDR="src/partials/header.html"
 
-# 1) Add unified card header styles (once).
-if ! grep -q '/* Card header */' "$CSS"; then
-  cat >>"$CSS" <<'CSS'
+# 1) style.css — unify buttons, add small size, keep tabs underline, add tabs ribbon helper.
+#    - primary -> BLUE
+#    - radius -> 8px
+#    - add .rw-btn--sm
+#    - add .tabs-bar style (light ribbon)
+perl -0777 -i -pe '
+  s/--rw-btn-radius:\s*10px;/--rw-btn-radius: 8px;/;
+  s/--rw-positive:\s*#059669;.*?\n/--rw-positive: #2563eb;       \/* blue-600 *\/\n/;
+  s/--rw-positive-hover:\s*#047857;.*?\n/--rw-positive-hover: #1d4ed8; \/* blue-700 *\/\n/;
+  # add .rw-btn--sm if missing
+  if (!/\.rw-btn--sm\{/s) {
+    $_ .= "\n/* small buttons for dense toolbars */\n.rw-btn--sm{ --rw-btn-h:34px; --rw-btn-px:12px; --rw-btn-fs:.8125rem; --rw-btn-radius:8px; }\n.rw-btn--sm .rw-icon{ width:16px; height:16px; }\n";
+  }
+  # add .tabs-bar ribbon if missing
+  if (!/\.tabs-bar\{/s) {
+    $_ .= "\n/* tabs ribbon */\n.tabs-bar{ background:#eff6ff; border-bottom:1px solid #dbeafe; border-top-left-radius:.75rem; border-top-right-radius:.75rem; padding:.5rem; margin:-1rem -1rem 1rem; }\n";
+  }
+' "$CSS"
 
-/* Card header */
-:root{
-  --rw-card-header-bg:#f1f5f9;   /* slate-100: subtle solid */
-  --rw-card-header-fg:#0f172a;   /* slate-900 text */
-  --rw-card-header-border:#e2e8f0; /* slate-200 divider */
-  --rw-card-radius-xl:0.75rem;   /* matches rounded-xl */
-}
-/* Use inside white, padded cards (e.g., bg-white p-4 rounded-xl shadow) */
-.rw-card__header{
-  background:var(--rw-card-header-bg);
-  color:var(--rw-card-header-fg);
-  border-bottom:1px solid var(--rw-card-header-border);
-  /* pull to card edges (cards use p-4 = 1rem) */
-  margin:-1rem -1rem 0.75rem;
-  padding:.75rem 1rem;
-  border-top-left-radius:var(--rw-card-radius-xl);
-  border-top-right-radius:var(--rw-card-radius-xl);
-}
-.rw-card__title{ font-weight:700; font-size:1.125rem; line-height:1.5rem; } /* ~text-lg */
-CSS
-  echo "[ok] Added unified card header styles to $CSS"
-else
-  echo "[skip] Card header styles already present"
-fi
+# 2) header.html — keep clickability, add ribbon, unify headers, move & dedupe toolbar.
 
-# 2) Layout Diagram: replace the inline <h2> with a unified header block.
+# 2a) Tabs row: add tabs-bar class to nav (preserve existing classes)
+perl -0777 -i -pe '
+  s/<nav class="([^"]*?)border-b([^"]*?)">/<nav class="tabs-bar \1border-b\2">/;
+' "$HDR"
+
+# 2b) Job Dashboard header: replace the mixed header+toolbar block with a simple h2 + underline
 perl -0777 -i -pe '
   s{
-    <h2\s+class="[^"]*\bborder-b\b[^"]*">\s*Layout\s+Diagram\s*</h2>
+    <section\b[^>]*id="dashboard"[^>]*>\s*
+    <div\s+class="[^"]*?\bmb-3\b[^"]*?">\s*
+      <h2[^>]*>\s*Job\s+Dashboard\s*<\/h2>\s*
+      <div[^>]*>.*?<\/div>\s*
+    <\/div>
   }{
-    <div class="rw-card__header">\n  <h2 class="rw-card__title">Layout Diagram</h2>\n</div>
-  }sx' "$HDR"
-
-# 3) Job Dashboard: normalize the header block to the same unified header.
-#    Handles both variants (with or without a buttons container).
-perl -0777 -i -pe '
-  s{
-    <div\s+class="[^"]*\bmb-3\b[^"]*">\s*
-      <h2[^>]*>\s*Job\s+Dashboard\s*</h2>
-      (?:\s*<div[^>]*>.*?</div>)?     # optional button group
-    \s*</div>
-  }{
-    <div class="rw-card__header">\n  <h2 class="rw-card__title">Job Dashboard</h2>\n</div>
+    <section class="bg-white p-4 rounded-xl shadow" id="dashboard" style="margin-top:0">\n<h2 class="text-xl font-semibold mb-3 border-b pb-2">Job Dashboard</h2>
   }gsx' "$HDR"
 
-echo "[done] Unified card headers applied."
+# 2c) Insert one bottom-right toolbar (small buttons) after #dbAlerts; first remove any existing bottom toolbars to avoid duplicates.
+perl -0777 -i -pe '
+  s/\n\s*<div class="mt-3\s+flex[^"]*>\s*<button[^>]*id="dashSave"[\s\S]*?<\/div>//g;
+  s/(<div class="mt-3 text-xs" id="dbAlerts"><\/div>)/\1\n<div class="mt-3 flex gap-2 justify-end no-print">\n  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashUndo">Undo<\/button>\n  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashQuote">Quote<\/button>\n  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashBook">Book<\/button>\n  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashSave">Save<\/button>\n<\/div>/;
+' "$HDR"
+
+echo "[done] UI consistency fix applied."
 git status --porcelain

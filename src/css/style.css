@@ -11,13 +11,13 @@ body { font-family: 'Inter', sans-serif; }
   --rw-btn-h: 40px;
   --rw-btn-px: 16px;
   --rw-btn-gap: 8px;
-  --rw-btn-radius: 10px;
+  --rw-btn-radius: 8px;
   --rw-btn-weight: 600;
   --rw-btn-fs: 0.875rem; /* ~text-sm */
 
   /* Map to your palette if you like; these match existing emerald/rose */
-  --rw-positive: #059669;       /* emerald-600 */
-  --rw-positive-hover: #047857; /* emerald-700 */
+  --rw-positive: #2563eb;       /* blue-600 */
+  --rw-positive-hover: #1d4ed8; /* blue-700 */
   --rw-danger: #e11d48;         /* rose-600 */
   --rw-danger-hover: #be123c;   /* rose-700 */
 
@@ -87,3 +87,67 @@ body{ background:#f8fafc; } /* Tailwind slate-50 */
   border-top-right-radius:var(--rw-card-radius-xl);
 }
 .rw-card__title{ font-weight:700; font-size:1.125rem; line-height:1.5rem; } /* ~text-lg */
+
+/* App background */
+body{ background:#f8fafc; } /* slate-50 */
+
+/* UI refresh: tabs & headers */
+:root{
+  --rw-primary-50:#eff6ff;  /* blue-50 */
+  --rw-primary-600:#2563eb; /* blue-600 */
+  --rw-primary-700:#1d4ed8; /* blue-700 */
+  --rw-card-head-bg:#f1f5f9;   /* slate-100 */
+  --rw-card-head-fg:#0f172a;   /* slate-900 */
+  --rw-card-head-border:#e2e8f0; /* slate-200 */
+  --rw-card-radius-xl:0.75rem;
+}
+
+/* Tabs ribbon */
+.rw-tabs{
+  background:var(--rw-primary-50);
+  border-bottom:1px solid #dbeafe;     /* blue-200 */
+  margin:-1rem -1rem 1rem;             /* pull to card edges */
+  padding:.5rem;
+  border-top-left-radius:var(--rw-card-radius-xl);
+  border-top-right-radius:var(--rw-card-radius-xl);
+}
+
+/* Tab button (pill) */
+.rw-tab{
+  appearance:none;
+  font-weight:600;
+  border:1px solid transparent;
+  border-radius:9999px;
+  padding:.5rem .875rem;
+  color:#334155;                       /* slate-600 */
+  background:transparent;
+  cursor:pointer;
+}
+.rw-tab:hover{ background:#e2e8f0; }   /* slate-200 */
+.rw-tab.active{
+  background:var(--rw-primary-600);
+  color:#fff;
+  border-color:var(--rw-primary-600);
+  box-shadow:0 1px 2px rgba(0,0,0,.05);
+}
+
+/* Card header */
+.rw-card__header{
+  background:var(--rw-card-head-bg);
+  color:var(--rw-card-head-fg);
+  border-bottom:1px solid var(--rw-card-head-border);
+  margin:-1rem -1rem .75rem;
+  padding:.75rem 1rem;
+  border-top-left-radius:var(--rw-card-radius-xl);
+  border-top-right-radius:var(--rw-card-radius-xl);
+}
+.rw-card__title{ font-weight:700; font-size:1.125rem; line-height:1.5rem; } /* ~text-lg */
+
+/* Compact buttons for tight toolbars */
+.rw-btn--sm{
+  --rw-btn-h:34px; --rw-btn-px:12px; --rw-btn-fs:.8125rem; --rw-btn-radius:8px;
+}
+.rw-btn--sm .rw-icon{ width:16px; height:16px; }
+
+/* tabs ribbon */
+.tabs-bar{ background:#eff6ff; border-bottom:1px solid #dbeafe; border-top-left-radius:.75rem; border-top-right-radius:.75rem; padding:.5rem; margin:-1rem -1rem 1rem; }

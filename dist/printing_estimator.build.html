@@ -19,13 +19,13 @@ body { font-family: 'Inter', sans-serif; }
   --rw-btn-h: 40px;
   --rw-btn-px: 16px;
   --rw-btn-gap: 8px;
-  --rw-btn-radius: 10px;
+  --rw-btn-radius: 8px;
   --rw-btn-weight: 600;
   --rw-btn-fs: 0.875rem; /* ~text-sm */
 
   /* Map to your palette if you like; these match existing emerald/rose */
-  --rw-positive: #059669;       /* emerald-600 */
-  --rw-positive-hover: #047857; /* emerald-700 */
+  --rw-positive: #2563eb;       /* blue-600 */
+  --rw-positive-hover: #1d4ed8; /* blue-700 */
   --rw-danger: #e11d48;         /* rose-600 */
   --rw-danger-hover: #be123c;   /* rose-700 */
 
@@ -95,6 +95,70 @@ body{ background:#f8fafc; } /* Tailwind slate-50 */
   border-top-right-radius:var(--rw-card-radius-xl);
 }
 .rw-card__title{ font-weight:700; font-size:1.125rem; line-height:1.5rem; } /* ~text-lg */
+
+/* App background */
+body{ background:#f8fafc; } /* slate-50 */
+
+/* UI refresh: tabs & headers */
+:root{
+  --rw-primary-50:#eff6ff;  /* blue-50 */
+  --rw-primary-600:#2563eb; /* blue-600 */
+  --rw-primary-700:#1d4ed8; /* blue-700 */
+  --rw-card-head-bg:#f1f5f9;   /* slate-100 */
+  --rw-card-head-fg:#0f172a;   /* slate-900 */
+  --rw-card-head-border:#e2e8f0; /* slate-200 */
+  --rw-card-radius-xl:0.75rem;
+}
+
+/* Tabs ribbon */
+.rw-tabs{
+  background:var(--rw-primary-50);
+  border-bottom:1px solid #dbeafe;     /* blue-200 */
+  margin:-1rem -1rem 1rem;             /* pull to card edges */
+  padding:.5rem;
+  border-top-left-radius:var(--rw-card-radius-xl);
+  border-top-right-radius:var(--rw-card-radius-xl);
+}
+
+/* Tab button (pill) */
+.rw-tab{
+  appearance:none;
+  font-weight:600;
+  border:1px solid transparent;
+  border-radius:9999px;
+  padding:.5rem .875rem;
+  color:#334155;                       /* slate-600 */
+  background:transparent;
+  cursor:pointer;
+}
+.rw-tab:hover{ background:#e2e8f0; }   /* slate-200 */
+.rw-tab.active{
+  background:var(--rw-primary-600);
+  color:#fff;
+  border-color:var(--rw-primary-600);
+  box-shadow:0 1px 2px rgba(0,0,0,.05);
+}
+
+/* Card header */
+.rw-card__header{
+  background:var(--rw-card-head-bg);
+  color:var(--rw-card-head-fg);
+  border-bottom:1px solid var(--rw-card-head-border);
+  margin:-1rem -1rem .75rem;
+  padding:.75rem 1rem;
+  border-top-left-radius:var(--rw-card-radius-xl);
+  border-top-right-radius:var(--rw-card-radius-xl);
+}
+.rw-card__title{ font-weight:700; font-size:1.125rem; line-height:1.5rem; } /* ~text-lg */
+
+/* Compact buttons for tight toolbars */
+.rw-btn--sm{
+  --rw-btn-h:34px; --rw-btn-px:12px; --rw-btn-fs:.8125rem; --rw-btn-radius:8px;
+}
+.rw-btn--sm .rw-icon{ width:16px; height:16px; }
+
+/* tabs ribbon */
+.tabs-bar{ background:#eff6ff; border-bottom:1px solid #dbeafe; border-top-left-radius:.75rem; border-top-right-radius:.75rem; padding:.5rem; margin:-1rem -1rem 1rem; }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -122,14 +186,14 @@ body{ background:#f8fafc; } /* Tailwind slate-50 */
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 <!-- LEFT (2/3) -->
 <aside class="lg:col-span-2 bg-white rounded-xl shadow p-4 self-start">
-<nav class="border-b border-gray-200 mb-4 flex flex-wrap gap-1 no-print">
-<button class="tab-button active" data-tab="setup">Setup</button>
-<button class="tab-button" data-tab="job">Job</button>
-<button class="tab-button" data-tab="parts">Parts</button>
-<button class="tab-button" data-tab="templates">Templates</button>
-<button class="tab-button" data-tab="pricing">Pricing</button>
-<button class="tab-button" data-tab="inventory">Inventory</button>
-<button class="tab-button" data-tab="quoteTab">Quote</button>
+<nav class="rw-tabs flex flex-wrap gap-1 no-print">
+<button class="rw-tab active" data-tab="setup">Setup</button>
+<button class="rw-tab" data-tab="job">Job</button>
+<button class="rw-tab" data-tab="parts">Parts</button>
+<button class="rw-tab" data-tab="templates">Templates</button>
+<button class="rw-tab" data-tab="pricing">Pricing</button>
+<button class="rw-tab" data-tab="inventory">Inventory</button>
+<button class="rw-tab" data-tab="quoteTab">Quote</button>
 </nav>
 <section class="tab-content active space-y-4" id="setup">
 <fieldset class="border rounded-lg p-4">
@@ -440,7 +504,9 @@ body{ background:#f8fafc; } /* Tailwind slate-50 */
 <section class="bg-white p-4 rounded-xl shadow" id="layoutSection" style="display:none;margin-top:0">
 
     <div class="rw-card__header">
+  <div class="rw-card__header">
   <h2 class="rw-card__title">Layout Diagram</h2>
+</div>
 </div>
   
 <div class="canvas-container bg-gray-100 rounded-lg" id="canvas-container">
@@ -477,13 +543,24 @@ body{ background:#f8fafc; } /* Tailwind slate-50 */
 </table>
 </div>
 <div class="mt-3 text-xs" id="dbAlerts"></div>
-<div class="mt-3 flex gap-2 justify-end">
+<div class="mt-3 flex gap-2 justify-end no-print">
+  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashUndo">Undo</button>
+  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashQuote">Quote</button>
+  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashBook">Book</button>
+  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashSave">Save</button>
+</div>
+<div class="mt-3 flex gap-2 justify-end no-print">
+  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashUndo">Undo</button>
+  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashQuote">Quote</button>
+  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashBook">Book</button>
+  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashSave">Save</button>
+</div>
+<div class="mt-3 flex gap-2 justify-end no-print">
   <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashSave">Save</button>
   <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashBook">Book</button>
   <button class="rw-btn rw-btn--danger    rw-btn--sm" id="dashUndo">Undo</button>
   <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashQuote">Quote</button>
-</div>
-  </section>
+</div></section>
 </main>
 </div>
 <footer class="text-center mt-8 text-gray-500 text-sm">V1.0 Beta</footer>
