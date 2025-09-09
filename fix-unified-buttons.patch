@@ -1,7 +1,7 @@
 diff --git a/src/css/style.css b/src/css/style.css
 --- a/src/css/style.css
 +++ b/src/css/style.css
-@@ -1,9 +1,57 @@
+@@ -1,9 +1,56 @@
  body { font-family: 'Inter', sans-serif; }
      .canvas-container { width: 100%; padding-bottom: 66.66%; position: relative; }
      canvas { position: absolute; inset: 0; width: 100%; height: 100%; border: 1px solid #e2e8f0; border-radius: 0.5rem; pointer-events: none; }
@@ -62,7 +62,7 @@ diff --git a/src/css/style.css b/src/css/style.css
 diff --git a/src/index.template.html b/src/index.template.html
 --- a/src/index.template.html
 +++ b/src/index.template.html
-@@ -8,17 +8,7 @@
+@@ -8,71 +8,7 @@
    <!-- @@include: css/style.css -->
    </style>
    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
@@ -79,87 +79,139 @@ diff --git a/src/index.template.html b/src/index.template.html
 -    --red:   #e11d48;   /* rose-600 */
 -    --red-h: #be123c;   /* rose-700 */
 -  }
--  /* more rules... (removed) */
+-
+-  /* Base unified button style: all tabs EXCEPT Job, plus header buttons */
+-  .tab-content:not(#job) button,
+-  header .no-print button {
+-    display: inline-flex; align-items: center; gap: .5rem;
+-    padding: var(--btn-py) var(--btn-px);
+-    border-radius: var(--btn-radius);
+-    font-weight: 600; font-size: var(--btn-fs); line-height: 1.25rem;
+-    border: 1px solid transparent;
+-    box-shadow: var(--btn-shadow);
+-    transition: background-color .15s ease, color .15s ease, opacity .15s ease, transform .06s ease;
+-  }
+-  .tab-content:not(#job) button:active,
+-  header .no-print button:active { transform: translateY(1px); }
+-  .tab-content:not(#job) button:disabled,
+-  header .no-print button:disabled { opacity: .6; cursor: not-allowed; }
+-  .tab-content:not(#job) button:focus-visible,
+-  header .no-print button:focus-visible { outline: 2px solid rgba(15,23,42,.6); outline-offset: 1px; } /* slate-900-ish */
+-
+-  /* POSITIVE actions → green (match by common ID keywords) */
+-  .tab-content:not(#job) button[id*="Save"],
+-  .tab-content:not(#job) button[id*="Update"],
+-  .tab-content:not(#job) button[id*="Recalc"],
+-  .tab-content:not(#job) button[id*="Add"],
+-  .tab-content:not(#job) button[id*="Print"],
+-  .tab-content:not(#job) button[id*="Export"],
+-  .tab-content:not(#job) button[id*="Create"],
+-  .tab-content:not(#job) button[id*="Upload"],
+-  header .no-print button {
+-    background-color: var(--green); color: #fff;
+-  }
+-  .tab-content:not(#job) button[id*="Save"]:hover,
+-  .tab-content:not(#job) button[id*="Update"]:hover,
+-  .tab-content:not(#job) button[id*="Recalc"]:hover,
+-  .tab-content:not(#job) button[id*="Add"]:hover,
+-  .tab-content:not(#job) button[id*="Print"]:hover,
+-  .tab-content:not(#job) button[id*="Export"]:hover,
+-  .tab-content:not(#job) button[id*="Create"]:hover,
+-  .tab-content:not(#job) button[id*="Upload"]:hover,
+-  header .no-print button:hover { background-color: var(--green-h); }
+-
+-  /* NEGATIVE actions → red (match by common ID keywords) */
+-  .tab-content:not(#job) button[id*="Delete"],
+-  .tab-content:not(#job) button[id*="Remove"],
+-  .tab-content:not(#job) button[id*="Clear"],
+-  .tab-content:not(#job) button[id*="Cancel"] {
+-    background-color: var(--red); color: #fff;
+-  }
+-  .tab-content:not(#job) button[id*="Delete"]:hover,
+-  .tab-content:not(#job) button[id*="Remove"]:hover,
+-  .tab-content:not(#job) button[id*="Clear"]:hover,
+-  .tab-content:not(#job) button[id*="Cancel"]:hover { background-color: var(--red-h); }
 -  </style>
-+  <!-- removed inline unified-buttons; using .rw-btn in css/style.css -->
++  <!-- unified-buttons removed; now using .rw-btn from css/style.css -->
  </head>
  <body>
  
 diff --git a/src/partials/header.html b/src/partials/header.html
 --- a/src/partials/header.html
 +++ b/src/partials/header.html
-@@ -11,4 +11,4 @@
--<button class="px-3 py-2 rounded-lg bg-slate-800 text-white" id="btnExportEstimate">Save Estimate (new rev)</button>
--<button class="px-3 py-2 rounded-lg bg-blue-600 text-white" id="btnPrintQuote">Print Customer Quote</button>
-+<button class="rw-btn rw-btn--positive" id="btnExportEstimate">Save Estimate (new rev)</button>
-+<button class="rw-btn rw-btn--positive" id="btnPrintQuote">Print Customer Quote</button>
- </div>
-@@ -52,1 +52,1 @@
--<button class="hidden px-3 py-2 rounded-lg bg-emerald-600 text-white" id="btnAddTemplate">Add Template to Job</button>
-+<button class="hidden rw-btn rw-btn--positive" id="btnAddTemplate">Add Template to Job</button>
-@@ -60,4 +60,4 @@
--<button class="px-2 py-1 rounded bg-slate-800 text-white text-xs" id="dashSave">Save</button>
--<button class="px-2 py-1 rounded bg-indigo-600 text-white text-xs" id="dashBook">Book</button>
--<button class="px-2 py-1 rounded bg-amber-600 text-white text-xs" id="dashUndo">Undo</button>
--<button class="px-2 py-1 rounded bg-blue-600 text-white text-xs" id="dashQuote">Quote</button>
-+<button class="rw-btn rw-btn--positive" id="dashSave">Save</button>
-+<button class="rw-btn rw-btn--positive" id="dashBook">Book</button>
-+<button class="rw-btn rw-btn--secondary" id="dashUndo">Undo</button>
-+<button class="rw-btn rw-btn--positive" id="dashQuote">Quote</button>
+@@ -11,7 +11,7 @@
+   <div class="flex gap-2 no-print">
+-    <button class="px-3 py-2 rounded-lg bg-slate-800 text-white" id="btnExportEstimate">Save Estimate (new rev)</button>
+-    <button class="px-3 py-2 rounded-lg bg-blue-600 text-white" id="btnPrintQuote">Print Customer Quote</button>
++    <button class="rw-btn rw-btn--positive" id="btnExportEstimate">Save Estimate (new rev)</button>
++    <button class="rw-btn rw-btn--positive" id="btnPrintQuote">Print Customer Quote</button>
+   </div>
+@@ -52,7 +52,7 @@
+-    <button class="hidden px-3 py-2 rounded-lg bg-emerald-600 text-white" id="btnAddTemplate">Add Template to Job</button>
++    <button class="hidden rw-btn rw-btn--positive" id="btnAddTemplate">Add Template to Job</button>
+@@ -60,10 +60,10 @@
+-    <button class="px-2 py-1 rounded bg-slate-800 text-white text-xs" id="dashSave">Save</button>
+-    <button class="px-2 py-1 rounded bg-indigo-600 text-white text-xs" id="dashBook">Book</button>
+-    <button class="px-2 py-1 rounded bg-amber-600 text-white text-xs" id="dashUndo">Undo</button>
+-    <button class="px-2 py-1 rounded bg-blue-600 text-white text-xs" id="dashQuote">Quote</button>
++    <button class="rw-btn rw-btn--positive" id="dashSave">Save</button>
++    <button class="rw-btn rw-btn--positive" id="dashBook">Book</button>
++    <button class="rw-btn rw-btn--secondary" id="dashUndo">Undo</button>
++    <button class="rw-btn rw-btn--positive" id="dashQuote">Quote</button>
 diff --git a/src/partials/tabs_setup.html b/src/partials/tabs_setup.html
 --- a/src/partials/tabs_setup.html
 +++ b/src/partials/tabs_setup.html
-@@ -15,4 +15,4 @@
--<label class="px-3 py-2 rounded-lg bg-slate-700 text-white cursor-pointer">
-+<label class="rw-btn rw-btn--secondary cursor-pointer">
-   <input accept="image/*" class="hidden" id="logoUploadSetup" type="file"/> Upload Logo
- </label>
--<button class="px-3 py-2 rounded-lg bg-slate-800 text-white" id="btnProfileSave">Save Company Profile</button>
-+<button class="rw-btn rw-btn--positive" id="btnProfileSave">Save Company Profile</button>
+@@ -14,6 +14,6 @@
+-    <label class="px-3 py-2 rounded-lg bg-slate-700 text-white cursor-pointer">
++    <label class="rw-btn rw-btn--secondary cursor-pointer">
+       <input accept="image/*" class="hidden" id="logoUploadSetup" type="file"/> Upload Logo
+     </label>
+-    <button class="px-3 py-2 rounded-lg bg-slate-800 text-white" id="btnProfileSave">Save Company Profile</button>
++    <button class="rw-btn rw-btn--positive" id="btnProfileSave">Save Company Profile</button>
 diff --git a/src/partials/tabs_job.html b/src/partials/tabs_job.html
 --- a/src/partials/tabs_job.html
 +++ b/src/partials/tabs_job.html
-@@ -16,2 +16,2 @@
--<button class="px-3 py-2 rounded-lg bg-slate-700 text-white" id="btnSaveCustomerFromJob">Save / Update Customer</button>
--<button class="px-3 py-2 rounded-lg bg-rose-600 text-white" id="btnDeleteCustomerFromJob">Delete Customer</button>
-+<button class="rw-btn rw-btn--positive" id="btnSaveCustomerFromJob">Save / Update Customer</button>
-+<button class="rw-btn rw-btn--danger" id="btnDeleteCustomerFromJob">Delete Customer</button>
+@@ -16,4 +16,4 @@
+-    <button class="px-3 py-2 rounded-lg bg-slate-700 text-white" id="btnSaveCustomerFromJob">Save / Update Customer</button>
+-    <button class="px-3 py-2 rounded-lg bg-rose-600 text-white" id="btnDeleteCustomerFromJob">Delete Customer</button>
++    <button class="rw-btn rw-btn--positive" id="btnSaveCustomerFromJob">Save / Update Customer</button>
++    <button class="rw-btn rw-btn--danger" id="btnDeleteCustomerFromJob">Delete Customer</button>
 diff --git a/src/partials/tabs_inventory.html b/src/partials/tabs_inventory.html
 --- a/src/partials/tabs_inventory.html
 +++ b/src/partials/tabs_inventory.html
 @@ -9,2 +9,2 @@
--<button class="col-span-2 px-3 py-2 rounded-lg bg-slate-700 text-white" id="btnInvAdd">Add / Update</button>
--<button class="px-3 py-2 rounded-lg bg-rose-600 text-white" id="btnInvClear">Clear All</button>
-+<button class="col-span-2 rw-btn rw-btn--positive" id="btnInvAdd">Add / Update</button>
-+<button class="rw-btn rw-btn--danger" id="btnInvClear">Clear All</button>
+-    <button class="col-span-2 px-3 py-2 rounded-lg bg-slate-700 text-white" id="btnInvAdd">Add / Update</button>
+-    <button class="px-3 py-2 rounded-lg bg-rose-600 text-white" id="btnInvClear">Clear All</button>
++    <button class="col-span-2 rw-btn rw-btn--positive" id="btnInvAdd">Add / Update</button>
++    <button class="rw-btn rw-btn--danger" id="btnInvClear">Clear All</button>
 @@ -29,2 +29,2 @@
--<button class="px-3 py-2 rounded-lg bg-slate-600 text-white" id="btnCatOpen">Open WCP Page</button>
--<button class="px-3 py-2 rounded-lg bg-emerald-600 text-white" id="btnCatAdd">Add to Catalog (+Inventory)</button>
-+<button class="rw-btn rw-btn--secondary" id="btnCatOpen">Open WCP Page</button>
-+<button class="rw-btn rw-btn--positive" id="btnCatAdd">Add to Catalog (+Inventory)</button>
+-    <button class="px-3 py-2 rounded-lg bg-slate-600 text-white" id="btnCatOpen">Open WCP Page</button>
+-    <button class="px-3 py-2 rounded-lg bg-emerald-600 text-white" id="btnCatAdd">Add to Catalog (+Inventory)</button>
++    <button class="rw-btn rw-btn--secondary" id="btnCatOpen">Open WCP Page</button>
++    <button class="rw-btn rw-btn--positive" id="btnCatAdd">Add to Catalog (+Inventory)</button>
 @@ -36,5 +36,5 @@
--<button class="px-3 py-2 rounded-lg bg-slate-700 text-white" id="btnCatExport">Export CSV</button>
--<label class="px-3 py-2 rounded-lg bg-slate-700 text-white cursor-pointer text-center">Import CSV
-+<button class="rw-btn rw-btn--secondary" id="btnCatExport">Export CSV</button>
-+<label class="rw-btn rw-btn--secondary cursor-pointer text-center">Import CSV
-   <input accept=".csv" class="hidden" id="catImport" type="file"/>
- </label>
--<button class="px-3 py-2 rounded-lg bg-rose-600 text-white" id="btnCatClear">Clear Catalog</button>
-+<button class="rw-btn rw-btn--danger" id="btnCatClear">Clear Catalog</button>
+-    <button class="px-3 py-2 rounded-lg bg-slate-700 text-white" id="btnCatExport">Export CSV</button>
+-    <label class="px-3 py-2 rounded-lg bg-slate-700 text-white cursor-pointer text-center">Import CSV
++    <button class="rw-btn rw-btn--secondary" id="btnCatExport">Export CSV</button>
++    <label class="rw-btn rw-btn--secondary cursor-pointer text-center">Import CSV
+       <input accept=".csv" class="hidden" id="catImport" type="file"/>
+     </label>
+-    <button class="px-3 py-2 rounded-lg bg-rose-600 text-white" id="btnCatClear">Clear Catalog</button>
++    <button class="rw-btn rw-btn--danger" id="btnCatClear">Clear Catalog</button>
 diff --git a/src/partials/tabs_pricing.html b/src/partials/tabs_pricing.html
 --- a/src/partials/tabs_pricing.html
 +++ b/src/partials/tabs_pricing.html
-@@ -9,3 +9,3 @@
--<button class="px-3 py-2 rounded-lg bg-emerald-600 text-white" id="btnRecalc">Recalculate</button>
--<button class="px-3 py-2 rounded-lg bg-indigo-600 text-white" id="btnBook">Book Job</button>
--<button class="px-3 py-2 rounded-lg bg-amber-600 text-white" id="btnUndoBooking">Undo Last Booking</button>
-+<button class="rw-btn rw-btn--positive" id="btnRecalc">Recalculate</button>
-+<button class="rw-btn rw-btn--positive" id="btnBook">Book Job</button>
-+<button class="rw-btn rw-btn--secondary" id="btnUndoBooking">Undo Last Booking</button>
+@@ -47,5 +47,5 @@
+-  <button class="px-3 py-2 rounded-lg bg-emerald-600 text-white" id="btnRecalc">Recalculate</button>
+-  <button class="px-3 py-2 rounded-lg bg-indigo-600 text-white" id="btnBook">Book Job</button>
+-  <button class="px-3 py-2 rounded-lg bg-amber-600 text-white" id="btnUndoBooking">Undo Last Booking</button>
++  <button class="rw-btn rw-btn--positive" id="btnRecalc">Recalculate</button>
++  <button class="rw-btn rw-btn--positive" id="btnBook">Book Job</button>
++  <button class="rw-btn rw-btn--secondary" id="btnUndoBooking">Undo Last Booking</button>
 diff --git a/src/partials/tabs_templates.html b/src/partials/tabs_templates.html
 --- a/src/partials/tabs_templates.html
 +++ b/src/partials/tabs_templates.html
-@@ -5,4 +5,4 @@
+@@ -38,8 +38,8 @@
 -<button class="px-3 py-2 rounded-lg bg-emerald-600 text-white" id="btnTplSave">Save Template</button>
 -<button class="px-3 py-2 rounded-lg bg-blue-600 text-white hidden" id="btnTplUpdate">Update</button>
 -<button class="px-3 py-2 rounded-lg bg-rose-600 text-white hidden" id="btnTplDelete">Delete</button>

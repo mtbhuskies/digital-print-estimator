@@ -10,71 +10,7 @@
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com"></script>
-<style id="unified-buttons">
-  :root{
-    --btn-radius: 0.5rem;
-    --btn-px: 0.75rem;
-    --btn-py: 0.5rem;
-    --btn-fs: 0.875rem; /* text-sm */
-    --btn-shadow: 0 1px 2px rgba(0,0,0,.05);
-    --green: #059669;   /* emerald-600 */
-    --green-h: #047857; /* emerald-700 */
-    --red:   #e11d48;   /* rose-600 */
-    --red-h: #be123c;   /* rose-700 */
-  }
-
-  /* Base unified button style: all tabs EXCEPT Job, plus header buttons */
-  .tab-content:not(#job) button,
-  header .no-print button {
-    display: inline-flex; align-items: center; gap: .5rem;
-    padding: var(--btn-py) var(--btn-px);
-    border-radius: var(--btn-radius);
-    font-weight: 600; font-size: var(--btn-fs); line-height: 1.25rem;
-    border: 1px solid transparent;
-    box-shadow: var(--btn-shadow);
-    transition: background-color .15s ease, color .15s ease, opacity .15s ease, transform .06s ease;
-  }
-  .tab-content:not(#job) button:active,
-  header .no-print button:active { transform: translateY(1px); }
-  .tab-content:not(#job) button:disabled,
-  header .no-print button:disabled { opacity: .6; cursor: not-allowed; }
-  .tab-content:not(#job) button:focus-visible,
-  header .no-print button:focus-visible { outline: 2px solid rgba(15,23,42,.6); outline-offset: 1px; } /* slate-900-ish */
-
-  /* POSITIVE actions → green (match by common ID keywords) */
-  .tab-content:not(#job) button[id*="Save"],
-  .tab-content:not(#job) button[id*="Update"],
-  .tab-content:not(#job) button[id*="Recalc"],
-  .tab-content:not(#job) button[id*="Add"],
-  .tab-content:not(#job) button[id*="Print"],
-  .tab-content:not(#job) button[id*="Export"],
-  .tab-content:not(#job) button[id*="Create"],
-  .tab-content:not(#job) button[id*="Upload"],
-  header .no-print button {
-    background-color: var(--green); color: #fff;
-  }
-  .tab-content:not(#job) button[id*="Save"]:hover,
-  .tab-content:not(#job) button[id*="Update"]:hover,
-  .tab-content:not(#job) button[id*="Recalc"]:hover,
-  .tab-content:not(#job) button[id*="Add"]:hover,
-  .tab-content:not(#job) button[id*="Print"]:hover,
-  .tab-content:not(#job) button[id*="Export"]:hover,
-  .tab-content:not(#job) button[id*="Create"]:hover,
-  .tab-content:not(#job) button[id*="Upload"]:hover,
-  header .no-print button:hover { background-color: var(--green-h); }
-
-  /* NEGATIVE actions → red (match by common ID keywords) */
-  .tab-content:not(#job) button[id*="Delete"],
-  .tab-content:not(#job) button[id*="Remove"],
-  .tab-content:not(#job) button[id*="Clear"],
-  .tab-content:not(#job) button[id*="Cancel"] {
-    background-color: var(--red); color: #fff;
-  }
-  .tab-content:not(#job) button[id*="Delete"]:hover,
-  .tab-content:not(#job) button[id*="Remove"]:hover,
-  .tab-content:not(#job) button[id*="Clear"]:hover,
-  .tab-content:not(#job) button[id*="Cancel"]:hover { background-color: var(--red-h); }
-</style>
+  <!-- unified-buttons removed; using .rw-btn in css/style.css -->
 </head>
 <body>
 
