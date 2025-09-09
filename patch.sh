@@ -1,57 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CSS="src/css/style.css"
 HDR="src/partials/header.html"
 
-# 1) Page background: light neutral so cards stand out
-#    (idempotent: only appends once)
-if ! grep -q "/* App background */" "$CSS"; then
-  cat >>"$CSS" <<'CSS'
+# 1) Remove the original top toolbar next to "Job Dashboard" (keep the H2)
+#    The current file has a header row with buttons at L58–L66. :contentReference[oaicite:0]{index=0}
+perl -0777 -i -pe '
+  s|
+    <div\s+class="flex\s+items-center\s+justify-between\s+mb-3">\s*
+    <h2[^>]*>Job\s+Dashboard</h2>\s*
+    <div\s+class="flex\s+gap-2">.*?</div>\s*
+    </div>
+  |<div class="flex items-center justify-between mb-3">\n  <h2 class="text-xl font-semibold">Job Dashboard</h2>\n</div>|gsx
+' "$HDR"
 
-/* App background */
-body{ background:#f8fafc; } /* Tailwind slate-50 */
-CSS
-  echo "[ok] App background appended to $CSS"
-else
-  echo "[skip] App background already present in $CSS"
-fi
+# 2) Remove ANY previously-inserted dashboard toolbars (defensive dedupe)
+perl -0777 -i -pe '
+  s|\n\s*<div[^>]*>\s*<button[^>]*id="dashSave"[^>]*>.*?</div>\s*||gs;   # generic block that contains dashSave
+' "$HDR"
 
-# 2) Compact button size modifier .rw-btn--sm (idempotent)
-if ! grep -q '\.rw-btn--sm' "$CSS"; then
-  cat >>"$CSS" <<'CSS'
+# 3) Insert one right-aligned toolbar AFTER the alerts div (#dbAlerts)
+#    Alerts div is at L25 currently. :contentReference[oaicite:1]{index=1}
+perl -0777 -i -pe '
+  s|
+    (<div\s+class="mt-3\s+text-xs"\s+id="dbAlerts"></div>)
+  |\1\n<div class="mt-3 flex gap-2 justify-end">\n  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashSave">Save</button>\n  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashBook">Book</button>\n  <button class="rw-btn rw-btn--danger    rw-btn--sm" id="dashUndo">Undo</button>\n  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashQuote">Quote</button>\n</div>
+  |sx
+' "$HDR"
 
-/* Compact buttons (tight headers like Job Dashboard) */
-.rw-btn--sm{
-  --rw-btn-h: 34px;
-  --rw-btn-px: 12px;
-  --rw-btn-fs: 0.8125rem; /* ~13px */
-  --rw-btn-radius: 8px;
-}
-.rw-btn--sm .rw-icon{ width:16px; height:16px; }
-CSS
-  echo "[ok] .rw-btn--sm appended to $CSS"
-else
-  echo "[skip] .rw-btn--sm already present"
-fi
-
-# Helper: overwrite class attribute on a <button> by id (safe & deterministic)
-rb_id() {
-  local f="$1" id="$2" klass="$3"
-  # id before class
-  perl -0777 -i -pe "s/(<button\\b[^>]*\\bid=\"$id\"[^>]*\\bclass=\")[^\"]*(\"[^>]*>)/\\1$klass\\2/g" "$f"
-  # class before id
-  perl -0777 -i -pe "s/(<button\\b[^>]*\\bclass=\")[^\"]*(\"[^>]*\\bid=\"$id\"[^>]*>)/\\1$klass\\2/g" "$f"
-}
-
-echo "[info] Compacting Job Dashboard buttons…"
-
-# 3) Apply compact sizing to the four dashboard buttons
-# (colors stay as you already mapped in header.html)
-rb_id "$HDR" "dashSave"  "rw-btn rw-btn--secondary rw-btn--sm"
-rb_id "$HDR" "dashBook"  "rw-btn rw-btn--positive  rw-btn--sm"
-rb_id "$HDR" "dashUndo"  "rw-btn rw-btn--danger    rw-btn--sm"
-rb_id "$HDR" "dashQuote" "rw-btn rw-btn--secondary rw-btn--sm"
-
-echo "[done] Background set; dashboard buttons compacted."
+echo "[done] Deduped dashboard toolbar: only one row at the bottom remains."
 git status --porcelain

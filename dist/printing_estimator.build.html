@@ -429,14 +429,7 @@ body{ background:#f8fafc; } /* Tailwind slate-50 */
 </section>
 <section class="bg-white p-4 rounded-xl shadow" id="dashboard" style="margin-top:0">
 <div class="flex items-center justify-between mb-3">
-<h2 class="text-xl font-semibold">Job Dashboard</h2>
-<div class="flex gap-2 justify-end">
-<button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashSave">Save</button>
-<button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashBook">Book</button>
-<button class="rw-btn rw-btn--danger    rw-btn--sm" id="dashUndo">Undo</button>
-<button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashQuote">Quote</button>
-</div>
-</div>
+<h2 class="text-xl font-semibold">Job Dashboard</h2></div>
 <div class="grid grid-cols-2 gap-2 text-sm">
 <div class="rounded-lg bg-slate-50 p-2 text-center"><div class="text-xs text-gray-500">Cost</div><div class="text-lg font-semibold" id="dbCost">—</div></div>
 <div class="rounded-lg bg-slate-50 p-2 text-center"><div class="text-xs text-gray-500">Sell</div><div class="text-lg font-semibold" id="dbSell">—</div></div>
@@ -457,7 +450,13 @@ body{ background:#f8fafc; } /* Tailwind slate-50 */
 </table>
 </div>
 <div class="mt-3 text-xs" id="dbAlerts"></div>
-</section>
+<div class="mt-3 flex gap-2 justify-end">
+  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashSave">Save</button>
+  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashBook">Book</button>
+  <button class="rw-btn rw-btn--danger    rw-btn--sm" id="dashUndo">Undo</button>
+  <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashQuote">Quote</button>
+</div>
+  </section>
 </main>
 </div>
 <footer class="text-center mt-8 text-gray-500 text-sm">V1.0 Beta</footer>
