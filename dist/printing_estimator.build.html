@@ -78,9 +78,9 @@ body { font-family: 'Inter', sans-serif; }
 <p class="text-gray-600">V1.0 Beta</p>
 </div>
 </div>
-<div class="flex gap-2 no-print">
+<div class="flex gap-2 no-print justify-end">
 <button class="rw-btn rw-btn--positive" id="btnExportEstimate">Save Estimate (new rev)</button>
-<button class="rw-btn rw-btn--positive" id="btnPrintQuote">Print Customer Quote</button>
+<button class="rw-btn rw-btn--secondary" id="btnPrintQuote">Print Customer Quote</button>
 </div>
 </div>
 </header>
@@ -110,7 +110,7 @@ body { font-family: 'Inter', sans-serif; }
 <label>State <input class="mt-1 w-full border rounded-md p-2" id="coState"/></label>
 <label>Postal <input class="mt-1 w-full border rounded-md p-2" id="coZip"/></label>
 </div>
-<div class="mt-3 flex items-center gap-2">
+<div class="mt-3 flex items-center gap-2 justify-end">
 <label class="px-3 py-2 rounded-lg bg-slate-700 text-white cursor-pointer">
 <input accept="image/*" class="hidden" id="logoUploadSetup" type="file"/> Upload Logo
               </label>
@@ -134,7 +134,7 @@ body { font-family: 'Inter', sans-serif; }
 <label>City <input class="mt-1 w-full border rounded-md p-2" id="billCity"/></label>
 <label>State <input class="mt-1 w-full border rounded-md p-2" id="billState"/></label>
 <label>Zip <input class="mt-1 w-full border rounded-md p-2" id="billZip"/></label>
-<div class="col-span-2 flex gap-2">
+<div class="col-span-2 flex gap-2 justify-end">
 <button class="rw-btn rw-btn--positive" id="btnSaveCustomerFromJob">Save / Update Customer</button>
 <button class="rw-btn rw-btn--danger" id="btnDeleteCustomerFromJob">Delete Customer</button>
 </div>
@@ -171,7 +171,7 @@ body { font-family: 'Inter', sans-serif; }
 </section>
 
 <section class="tab-content space-y-4" id="parts">
-<div class="flex gap-2 items-center">
+<div class="flex gap-2 items-center justify-end">
 <button class="rw-btn rw-btn--positive" id="btnAddPart">Add Part</button>
 <button class="rw-btn rw-btn--danger" id="btnRemovePart">Remove Selected</button>
 </div>
@@ -215,11 +215,11 @@ body { font-family: 'Inter', sans-serif; }
 <label>Gutter (in) <input class="mt-1 w-full border rounded-md p-2" id="tplGutter" step="0.0625" type="number" value="0"/></label>
 <label>Margin (in) <input class="mt-1 w-full border rounded-md p-2" id="tplMargin" step="0.125" type="number" value="0"/></label>
 </div>
-<div class="mt-3 flex gap-2">
+<div class="mt-3 flex gap-2 justify-end">
 <button class="rw-btn rw-btn--positive" id="btnTplSave">Save Template</button>
 <button class="rw-btn rw-btn--positive hidden" id="btnTplUpdate">Update</button>
 <button class="rw-btn rw-btn--danger hidden" id="btnTplDelete">Delete</button>
-<button class="rw-btn rw-btn--danger" id="btnTplClear">Clear Form</button>
+<button class="rw-btn rw-btn--secondary" id="btnTplClear">Clear Form</button>
 </div>
 </fieldset>
 </section>
@@ -270,10 +270,10 @@ body { font-family: 'Inter', sans-serif; }
 <label class="col-span-2">Payment Terms / Notes <textarea class="mt-1 w-full border rounded-md p-2" id="termsText" rows="2">Net 15. Prices valid 30 days. Freight extra if not specified.</textarea></label>
 </div>
 </fieldset>
-<div class="flex gap-2 no-print">
-<button class="rw-btn rw-btn--positive" id="btnRecalc">Recalculate</button>
+<div class="flex gap-2 no-print justify-end">
+<button class="rw-btn rw-btn--secondary" id="btnRecalc">Recalculate</button>
 <button class="rw-btn rw-btn--positive" id="btnBook">Book Job</button>
-<button class="rw-btn rw-btn--secondary" id="btnUndoBooking">Undo Last Booking</button>
+<button class="rw-btn rw-btn--danger" id="btnUndoBooking">Undo Last Booking</button>
 </div>
 <div class="mt-3 bg-emerald-50 rounded-lg p-4">
 <div class="text-emerald-800 font-semibold mb-2">Totals (All Parts)</div>
@@ -300,8 +300,8 @@ body { font-family: 'Inter', sans-serif; }
 <label>Size (WxH) <input class="mt-1 w-full border rounded-md p-2" id="invSize" placeholder="13x19"/></label>
 <label>Sheets on hand <input class="mt-1 w-full border rounded-md p-2" id="invSheets" type="number" value="0"/></label>
 <label>Reorder point <input class="mt-1 w-full border rounded-md p-2" id="invReorder" type="number" value="0"/></label>
-<button class="rw-btn rw-btn--positive" id="btnInvAdd">Add / Update</button>
-<button class="rw-btn rw-btn--danger" id="btnInvClear">Clear All</button>
+<button class="rw-btn rw-btn--positive justify-self-end" id="btnInvAdd">Add / Update</button>
+<button class="rw-btn rw-btn--danger   justify-self-end" id="btnInvClear">Clear All</button>
 </div>
 <div class="mt-3 overflow-auto">
 <table class="w-full text-sm">
@@ -320,19 +320,19 @@ body { font-family: 'Inter', sans-serif; }
 <legend class="px-2 font-semibold">Paper Catalog</legend>
 <div class="grid grid-cols-4 gap-2 text-sm items-end">
 <label class="col-span-2">WCP Code <input class="mt-1 w-full border rounded-md p-2" id="catCode" placeholder="TR2DDW17100HPC"/></label>
-<button class="rw-btn rw-btn--secondary" id="btnCatOpen">Open WCP Page</button>
-<button class="rw-btn rw-btn--positive" id="btnCatAdd">Add to Catalog (+Inventory)</button>
+<button class="rw-btn rw-btn--secondary justify-self-end" id="btnCatOpen">Open WCP Page</button>
+<button class="rw-btn rw-btn--positive justify-self-end" id="btnCatAdd">Add to Catalog (+Inventory)</button>
 <label class="col-span-2">Name <input class="mt-1 w-full border rounded-md p-2" id="catName" placeholder="Cougar Smooth 100C Digital"/></label>
 <label>Size (WxH) <input class="mt-1 w-full border rounded-md p-2" id="catSize" placeholder="13x19"/></label>
 <label>Sheets/ctn <input class="mt-1 w-full border rounded-md p-2" id="catSheets" type="number" value="500"/></label>
 <label>Price/1000 <input class="mt-1 w-full border rounded-md p-2" id="catPricePerThou" step="0.01" type="number" value="0"/></label>
 <label>Carton Price <input class="mt-1 w-full border rounded-md p-2" id="catCartonPrice" step="0.01" type="number" value="0"/></label>
 <label>$ per sheet (auto) <input class="mt-1 w-full border rounded-md p-2 bg-gray-100" id="catPerSheet" readonly=""/></label>
-<button class="rw-btn rw-btn--secondary" id="btnCatExport">Export CSV</button>
-<label class="rw-btn rw-btn--secondary cursor-pointer text-center">Import CSV
+<button class="rw-btn rw-btn--secondary justify-self-end" id="btnCatExport">Export CSV</button>
+<label class="rw-btn rw-btn--secondary cursor-pointer text-center justify-self-end">Import CSV
                 <input accept=".csv" class="hidden" id="catImport" type="file"/>
 </label>
-<button class="rw-btn rw-btn--danger" id="btnCatClear">Clear Catalog</button>
+<button class="rw-btn rw-btn--danger justify-self-end" id="btnCatClear">Clear Catalog</button>
 </div>
 <div class="mt-3 overflow-auto">
 <table class="w-full text-sm">
@@ -404,19 +404,19 @@ body { font-family: 'Inter', sans-serif; }
 <div class="canvas-container bg-gray-100 rounded-lg" id="canvas-container">
 <canvas id="impositionCanvas"></canvas>
 </div>
-<div class="mt-2 flex items-center gap-2">
-<button class="hidden rw-btn rw-btn--positive" id="btnAddTemplate">Add Template to Job</button>
+<div class="mt-2 flex items-center gap-2 justify-end">
+<button class="hidden rw-btn rw-btn--secondary" id="btnAddTemplate">Add Template to Job</button>
 <div class="text-xs" id="invWarn"></div>
 </div>
 </section>
 <section class="bg-white p-4 rounded-xl shadow" id="dashboard" style="margin-top:0">
 <div class="flex items-center justify-between mb-3">
 <h2 class="text-xl font-semibold">Job Dashboard</h2>
-<div class="flex gap-2">
-<button class="rw-btn rw-btn--positive" id="dashSave">Save</button>
-<button class="rw-btn rw-btn--positive" id="dashBook">Book</button>
-<button class="rw-btn rw-btn--secondary" id="dashUndo">Undo</button>
-<button class="rw-btn rw-btn--positive" id="dashQuote">Quote</button>
+<div class="flex gap-2 justify-end">
+<button class="rw-btn rw-btn--secondary text-xs" id="dashSave">Save</button>
+<button class="rw-btn rw-btn--positive text-xs" id="dashBook">Book</button>
+<button class="rw-btn rw-btn--danger   text-xs" id="dashUndo">Undo</button>
+<button class="rw-btn rw-btn--secondary text-xs" id="dashQuote">Quote</button>
 </div>
 </div>
 <div class="grid grid-cols-2 gap-2 text-sm">
