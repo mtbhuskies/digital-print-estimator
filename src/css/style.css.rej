@@ -1,0 +1,96 @@
+diff a/src/css/style.css b/src/css/style.css	(rejected hunks)
+@@ -10,47 +10,47 @@
+-    +/* --- Unified Buttons ----------------------------------------------------- */
+-    +:root{
+-    +  --rw-btn-h: 40px;
+-    +  --rw-btn-px: 16px;
+-    +  --rw-btn-gap: 8px;
+-    +  --rw-btn-radius: 10px;
+-    +  --rw-btn-weight: 600;
+-    +  --rw-btn-fs: 0.875rem; /* ~text-sm */
+-    +
+-    +  /* Map to your palette if you like; these match existing emerald/rose */
+-    +  --rw-positive: #059669;       /* emerald-600 */
+-    +  --rw-positive-hover: #047857; /* emerald-700 */
+-    +  --rw-danger: #e11d48;         /* rose-600 */
+-    +  --rw-danger-hover: #be123c;   /* rose-700 */
+-    +
+-    +  --rw-neutral-fg: #111827;
+-    +  --rw-neutral-bg: #ffffff;
+-    +  --rw-neutral-border: #d1d5db;
+-    +  --rw-on-dark: #ffffff;
+-    +  --rw-focus: rgba(15,23,42,.7); /* slate-ish */
+-    +}
+-    +
+-    +.rw-btn{
+-    +  appearance:none; display:inline-flex; align-items:center; justify-content:center; gap:var(--rw-btn-gap);
+-    +  height:var(--rw-btn-h); padding:0 var(--rw-btn-px);
+-    +  border-radius:var(--rw-btn-radius); border:1px solid transparent;
+-    +  font-weight:var(--rw-btn-weight); font-size:var(--rw-btn-fs); line-height:1;
+-    +  cursor:pointer; user-select:none; text-decoration:none;
+-    +  transition:background-color .15s, border-color .15s, box-shadow .15s, transform .02s, opacity .15s;
+-    +  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+-    +}
+-    +.rw-btn:focus-visible{ outline:2px solid var(--rw-focus); outline-offset:2px; }
+-    +.rw-btn:active{ transform: translateY(1px); }
+-    +.rw-btn:disabled{ opacity:.6; cursor:not-allowed; }
+-    +
+-    +.rw-btn--positive{ background:var(--rw-positive); color:var(--rw-on-dark); }
+-    +.rw-btn--positive:hover:not(:disabled){ background:var(--rw-positive-hover); }
+-    +
+-    +.rw-btn--danger{ background:var(--rw-danger); color:var(--rw-on-dark); }
+-    +.rw-btn--danger:hover:not(:disabled){ background:var(--rw-danger-hover); }
+-    +
+-    +.rw-btn--secondary{
+-    +  background:var(--rw-neutral-bg); color:var(--rw-neutral-fg); border-color:var(--rw-neutral-border);
+-    +}
+-    +.rw-btn--secondary:hover:not(:disabled){ background:#f9fafb; border-color:#cbd5e1; }
+-    +
+-    +.rw-btn .rw-icon{ width:18px; height:18px; flex:0 0 auto; color:currentColor; }
++/* --- Unified Buttons ----------------------------------------------------- */
++:root{
++  --rw-btn-h: 40px;
++  --rw-btn-px: 16px;
++  --rw-btn-gap: 8px;
++  --rw-btn-radius: 10px;
++  --rw-btn-weight: 600;
++  --rw-btn-fs: 0.875rem; /* ~text-sm */
++
++  /* Map to your palette if you like; these match existing emerald/rose */
++  --rw-positive: #059669;       /* emerald-600 */
++  --rw-positive-hover: #047857; /* emerald-700 */
++  --rw-danger: #e11d48;         /* rose-600 */
++  --rw-danger-hover: #be123c;   /* rose-700 */
++
++  --rw-neutral-fg: #111827;
++  --rw-neutral-bg: #ffffff;
++  --rw-neutral-border: #d1d5db;
++  --rw-on-dark: #ffffff;
++  --rw-focus: rgba(15,23,42,.7); /* slate-ish */
++}
++
++.rw-btn{
++  appearance:none; display:inline-flex; align-items:center; justify-content:center; gap:var(--rw-btn-gap);
++  height:var(--rw-btn-h); padding:0 var(--rw-btn-px);
++  border-radius:var(--rw-btn-radius); border:1px solid transparent;
++  font-weight:var(--rw-btn-weight); font-size:var(--rw-btn-fs); line-height:1;
++  cursor:pointer; user-select:none; text-decoration:none;
++  transition:background-color .15s, border-color .15s, box-shadow .15s, transform .02s, opacity .15s;
++  box-shadow: 0 1px 2px rgba(0,0,0,.05);
++}
++.rw-btn:focus-visible{ outline:2px solid var(--rw-focus); outline-offset:2px; }
++.rw-btn:active{ transform: translateY(1px); }
++.rw-btn:disabled{ opacity:.6; cursor:not-allowed; }
++
++.rw-btn--positive{ background:var(--rw-positive); color:var(--rw-on-dark); }
++.rw-btn--positive:hover:not(:disabled){ background:var(--rw-positive-hover); }
++
++.rw-btn--danger{ background:var(--rw-danger); color:var(--rw-on-dark); }
++.rw-btn--danger:hover:not(:disabled){ background:var(--rw-danger-hover); }
++
++.rw-btn--secondary{
++  background:var(--rw-neutral-bg); color:var(--rw-neutral-fg); border-color:var(--rw-neutral-border);
++}
++.rw-btn--secondary:hover:not(:disabled){ background:#f9fafb; border-color:#cbd5e1; }
++
++.rw-btn .rw-icon{ width:18px; height:18px; flex:0 0 auto; color:currentColor; }
