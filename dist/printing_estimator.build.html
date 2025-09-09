@@ -63,6 +63,18 @@ body { font-family: 'Inter', sans-serif; }
 .rw-btn--secondary:hover:not(:disabled){ background: var(--rw-info-hover); }
 
 .rw-btn .rw-icon{ width:18px; height:18px; flex:0 0 auto; color:currentColor; }
+
+/* App background */
+body{ background:#f8fafc; } /* Tailwind slate-50 */
+
+/* Compact buttons (tight headers like Job Dashboard) */
+.rw-btn--sm{
+  --rw-btn-h: 34px;
+  --rw-btn-px: 12px;
+  --rw-btn-fs: 0.8125rem; /* ~13px */
+  --rw-btn-radius: 8px;
+}
+.rw-btn--sm .rw-icon{ width:16px; height:16px; }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -419,10 +431,10 @@ body { font-family: 'Inter', sans-serif; }
 <div class="flex items-center justify-between mb-3">
 <h2 class="text-xl font-semibold">Job Dashboard</h2>
 <div class="flex gap-2 justify-end">
-<button class="rw-btn rw-btn--secondary text-xs" id="dashSave">Save</button>
-<button class="rw-btn rw-btn--positive text-xs" id="dashBook">Book</button>
-<button class="rw-btn rw-btn--danger   text-xs" id="dashUndo">Undo</button>
-<button class="rw-btn rw-btn--secondary text-xs" id="dashQuote">Quote</button>
+<button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashSave">Save</button>
+<button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashBook">Book</button>
+<button class="rw-btn rw-btn--danger    rw-btn--sm" id="dashUndo">Undo</button>
+<button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashQuote">Quote</button>
 </div>
 </div>
 <div class="grid grid-cols-2 gap-2 text-sm">
