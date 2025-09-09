@@ -67,3 +67,23 @@ body{ background:#f8fafc; } /* Tailwind slate-50 */
   --rw-btn-radius: 8px;
 }
 .rw-btn--sm .rw-icon{ width:16px; height:16px; }
+
+/* Card header */
+:root{
+  --rw-card-header-bg:#f1f5f9;   /* slate-100: subtle solid */
+  --rw-card-header-fg:#0f172a;   /* slate-900 text */
+  --rw-card-header-border:#e2e8f0; /* slate-200 divider */
+  --rw-card-radius-xl:0.75rem;   /* matches rounded-xl */
+}
+/* Use inside white, padded cards (e.g., bg-white p-4 rounded-xl shadow) */
+.rw-card__header{
+  background:var(--rw-card-header-bg);
+  color:var(--rw-card-header-fg);
+  border-bottom:1px solid var(--rw-card-header-border);
+  /* pull to card edges (cards use p-4 = 1rem) */
+  margin:-1rem -1rem 0.75rem;
+  padding:.75rem 1rem;
+  border-top-left-radius:var(--rw-card-radius-xl);
+  border-top-right-radius:var(--rw-card-radius-xl);
+}
+.rw-card__title{ font-weight:700; font-size:1.125rem; line-height:1.5rem; } /* ~text-lg */
