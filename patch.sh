@@ -3,17 +3,21 @@ set -euo pipefail
 
 INV="src/partials/tabs_inventory.html"
 
-# Replace the three separate elements (Export, Import label, Clear) with one right-justified row.
+# If the unified row already exists, do nothing.
+if grep -q 'col-span-4 flex gap-2 justify-end' "$INV"; then
+  echo "[skip] unified actions row already present in $INV"
+  exit 0
+fi
+
+# Replace the three separate controls with a single right-aligned row.
 perl -0777 -i -pe '
   s{
-    \s*<button\s+class="rw-btn\s+rw-btn--secondary"\s+id="btnCatExport">Export CSV</button>\s*
-    <label\s+class="rw-btn\s+rw-btn--secondary\s+cursor-pointer\s+text-center">Import\s+CSV\s*
-      <input[^>]*id="catImport"[^>]*>\s*
-    </label>\s*
-    <button\s+class="rw-btn\s+rw-btn--danger"\s+id="btnCatClear">Clear Catalog</button>
+    \s*<button\b[^>]*\bid="btnCatExport"[^>]*>.*?</button>\s*
+    <label\b[^>]*>\s*Import\s*CSV\b.*?id="catImport"[^>]*>.*?</label>\s*
+    <button\b[^>]*\bid="btnCatClear"[^>]*>.*?</button>
   }{
     \n  <div class="col-span-4 flex gap-2 justify-end">\n    <button class="rw-btn rw-btn--secondary" id="btnCatExport">Export CSV</button>\n    <label class="rw-btn rw-btn--secondary cursor-pointer text-center">Import CSV\n      <input accept=".csv" class="hidden" id="catImport" type="file"/>\n    </label>\n    <button class="rw-btn rw-btn--danger" id="btnCatClear">Clear Catalog</button>\n  </div>
-  }sx' "$INV"
+  }gsx' "$INV"
 
-echo "[ok] Moved Export/Import/Clear into one right-aligned row in $INV"
+echo "[ok] Export/Import/Clear moved into one right-aligned row in $INV"
 git status --porcelain
