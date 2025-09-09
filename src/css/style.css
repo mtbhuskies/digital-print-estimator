@@ -89,3 +89,13 @@ input:focus,select:focus,textarea:focus{outline:2px solid #bfdbfe;border-color:#
 .no-print{}
 /* Print behavior preserved */
 @media print{body *{visibility:hidden} #quote,#quote *{visibility:visible} #quote{position:absolute;inset:0;width:100%;margin:0;box-shadow:none}}
+
+/* Section header (match tabs ribbon) */
+.section-header{
+  background:#eef2ff;                /* indigo-100-ish, like the tabs */
+  border:1px solid #e0e7ff;          /* indigo-200 */
+  border-radius:12px;
+  padding:.5rem .75rem;
+  margin:0 0 .75rem 0;
+}
+.section-title{ font-weight:700; color:#0f172a; font-size:1.125rem; }
