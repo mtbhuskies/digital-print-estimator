@@ -1,153 +1,81 @@
-body { font-family: 'Inter', sans-serif; }
-    .canvas-container { width: 100%; padding-bottom: 66.66%; position: relative; }
-    canvas { position: absolute; inset: 0; width: 100%; height: 100%; border: 1px solid #e2e8f0; border-radius: 0.5rem; pointer-events: none; }
-    .tab-button { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 2px solid transparent; font-weight: 600; color: #4a5568; }
-    .tab-button.active { border-color: #2563eb; color: #1d4ed8; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .bad { outline: 2px solid #ef4444; outline-offset: 0; background: #fff1f2; }
-    @media print { body * { visibility: hidden; } #quote, #quote * { visibility: visible; } #quote { position: absolute; inset: 0; width: 100%; margin: 0; box-shadow: none; } }/* --- Unified Buttons ----------------------------------------------------- */
+/* ---- Base --------------------------------------------------------------- */
 :root{
-  --rw-btn-h: 40px;
-  --rw-btn-px: 16px;
-  --rw-btn-gap: 8px;
-  --rw-btn-radius: 8px;
-  --rw-btn-weight: 600;
-  --rw-btn-fs: 0.875rem; /* ~text-sm */
-
-  /* Map to your palette if you like; these match existing emerald/rose */
-  --rw-positive: #2563eb;       /* blue-600 */
-  --rw-positive-hover: #1d4ed8; /* blue-700 */
-  --rw-danger: #e11d48;         /* rose-600 */
-  --rw-danger-hover: #be123c;   /* rose-700 */
-
-  --rw-neutral-fg: #111827;
-  --rw-neutral-bg: #ffffff;
-  --rw-neutral-border: #d1d5db;
-  --rw-on-dark: #ffffff;
-  --rw-focus: rgba(15,23,42,.7); /* slate-ish */
-  --rw-info: #2563eb;
-  --rw-info-hover: #1d4ed8;
+  /* PrintSmith-ish professional blue accent + neutrals (desktop focus) */
+  --rw-primary: #2563eb;   /* blue-600 */
+  --rw-primary-h: #1d4ed8; /* blue-700 */
+  --rw-danger:  #dc2626;   /* red-600 */
+  --rw-danger-h:#b91c1c;   /* red-700 */
+  --rw-fg: #0f172a;        /* slate-900 */
+  --rw-muted: #475569;     /* slate-600 */
+  --rw-border: #e2e8f0;    /* slate-200 */
+  --rw-bg: #f8fafc;        /* slate-50 app bg */
+  --rw-card: #ffffff;
+  --rw-radius: 12px;
 }
-
-.rw-btn{
-  appearance:none; display:inline-flex; align-items:center; justify-content:center; gap:var(--rw-btn-gap);
-  height:var(--rw-btn-h); padding:0 var(--rw-btn-px);
-  border-radius:var(--rw-btn-radius); border:1px solid transparent;
-  font-weight:var(--rw-btn-weight); font-size:var(--rw-btn-fs); line-height:1;
-  cursor:pointer; user-select:none; text-decoration:none;
-  transition:background-color .15s, border-color .15s, box-shadow .15s, transform .02s, opacity .15s;
-  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+html,body{height:100%}
+body{
+  font-family: ui-sans-serif, system-ui, -apple-system, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  color:var(--rw-fg);
+  background:var(--rw-bg);
 }
-.rw-btn:focus-visible{ outline:2px solid var(--rw-focus); outline-offset:2px; }
-.rw-btn:active{ transform: translateY(1px); }
-.rw-btn:disabled{ opacity:.6; cursor:not-allowed; }
+h1,h2,h3{font-weight:700}
+h2{font-size:1.25rem; line-height:1.6}
 
-.rw-btn--positive{ background:var(--rw-positive); color:var(--rw-on-dark); }
-.rw-btn--positive:hover:not(:disabled){ background:var(--rw-positive-hover); }
+/* ---- Layout helpers ----------------------------------------------------- */
+.container{max-width:1200px;margin:0 auto;padding:1rem}
+.card{background:var(--rw-card);border-radius:var(--rw-radius);box-shadow:0 1px 2px rgba(0,0,0,.04);padding:1rem}
+.card h2{margin-bottom:.75rem;border-bottom:1px solid var(--rw-border);padding-bottom:.5rem}
 
-.rw-btn--danger{ background:var(--rw-danger); color:var(--rw-on-dark); }
-.rw-btn--danger:hover:not(:disabled){ background:var(--rw-danger-hover); }
-
-.rw-btn--secondary{
-  background: var(--rw-info); color: var(--rw-on-dark);
+/* ---- Tabs (KEEP .tab-button so JS stays working) ------------------------ */
+.tabs{display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap;
+  background:#eef2ff; /* indigo-100 tint ribbon */
+  border:1px solid #e0e7ff; border-radius:var(--rw-radius); padding:.5rem .75rem; margin-bottom:1rem;
 }
-.rw-btn--secondary:hover:not(:disabled){ background: var(--rw-info-hover); }
-
-.rw-btn .rw-icon{ width:18px; height:18px; flex:0 0 auto; color:currentColor; }
-
-/* App background */
-body{ background:#f8fafc; } /* Tailwind slate-50 */
-
-/* Compact buttons (tight headers like Job Dashboard) */
-.rw-btn--sm{
-  --rw-btn-h: 34px;
-  --rw-btn-px: 12px;
-  --rw-btn-fs: 0.8125rem; /* ~13px */
-  --rw-btn-radius: 8px;
+.tab-button{
+  appearance:none;background:transparent;border:none;cursor:pointer;
+  font-weight:700;color:var(--rw-muted);padding:.5rem .25rem;border-bottom:2px solid transparent;
 }
-.rw-btn--sm .rw-icon{ width:16px; height:16px; }
+.tab-button:hover{color:var(--rw-fg);border-bottom-color:#c7d2fe}
+.tab-button.active{color:var(--rw-primary);border-bottom-color:var(--rw-primary)}
+.tab-content{display:none}
+.tab-content.active{display:block}
 
-/* Card header */
-:root{
-  --rw-card-header-bg:#f1f5f9;   /* slate-100: subtle solid */
-  --rw-card-header-fg:#0f172a;   /* slate-900 text */
-  --rw-card-header-border:#e2e8f0; /* slate-200 divider */
-  --rw-card-radius-xl:0.75rem;   /* matches rounded-xl */
+/* ---- Buttons ------------------------------------------------------------ */
+.rw-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  height:38px;padding:0 14px;border-radius:8px;border:1px solid transparent;
+  font-weight:700;font-size:.875rem;line-height:1;cursor:pointer;user-select:none;
+  transition:background-color .15s,border-color .15s,box-shadow .15s,transform .02s,opacity .15s;
+  box-shadow:0 1px 2px rgba(0,0,0,.04)
 }
-/* Use inside white, padded cards (e.g., bg-white p-4 rounded-xl shadow) */
-.rw-card__header{
-  background:var(--rw-card-header-bg);
-  color:var(--rw-card-header-fg);
-  border-bottom:1px solid var(--rw-card-header-border);
-  /* pull to card edges (cards use p-4 = 1rem) */
-  margin:-1rem -1rem 0.75rem;
-  padding:.75rem 1rem;
-  border-top-left-radius:var(--rw-card-radius-xl);
-  border-top-right-radius:var(--rw-card-radius-xl);
-}
-.rw-card__title{ font-weight:700; font-size:1.125rem; line-height:1.5rem; } /* ~text-lg */
+.rw-btn:focus-visible{outline:2px solid #93c5fd; outline-offset:2px}
+.rw-btn:active{transform:translateY(1px)}
+.rw-btn:disabled{opacity:.6;cursor:not-allowed}
 
-/* App background */
-body{ background:#f8fafc; } /* slate-50 */
+.rw-btn--primary{background:var(--rw-primary);color:#fff}
+.rw-btn--primary:hover{background:var(--rw-primary-h)}
+.rw-btn--secondary{background:#ffffff;color:var(--rw-fg);border-color:var(--rw-border)}
+.rw-btn--secondary:hover{background:#f1f5f9;border-color:#cbd5e1}
+.rw-btn--danger{background:var(--rw-danger);color:#fff}
+.rw-btn--danger:hover{background:var(--rw-danger-h)}
+.rw-btn--sm{height:34px;padding:0 12px;font-size:.8125rem;border-radius:8px}
 
-/* UI refresh: tabs & headers */
-:root{
-  --rw-primary-50:#eff6ff;  /* blue-50 */
-  --rw-primary-600:#2563eb; /* blue-600 */
-  --rw-primary-700:#1d4ed8; /* blue-700 */
-  --rw-card-head-bg:#f1f5f9;   /* slate-100 */
-  --rw-card-head-fg:#0f172a;   /* slate-900 */
-  --rw-card-head-border:#e2e8f0; /* slate-200 */
-  --rw-card-radius-xl:0.75rem;
+/* ---- Forms -------------------------------------------------------------- */
+input[type=text], input[type=number], input[type=email], input[type=tel],
+select, textarea{
+  width:100%; height:40px; background:#fff; border:1px solid var(--rw-border);
+  border-radius:8px; padding:.5rem .625rem; color:var(--rw-fg);
 }
+textarea{height:auto;min-height:100px}
+input:focus, select:focus, textarea:focus{outline:2px solid #bfdbfe; outline-offset:0; border-color:#93c5fd}
 
-/* Tabs ribbon */
-.rw-tabs{
-  background:var(--rw-primary-50);
-  border-bottom:1px solid #dbeafe;     /* blue-200 */
-  margin:-1rem -1rem 1rem;             /* pull to card edges */
-  padding:.5rem;
-  border-top-left-radius:var(--rw-card-radius-xl);
-  border-top-right-radius:var(--rw-card-radius-xl);
-}
+/* ---- Utilities ---------------------------------------------------------- */
+.flex{display:flex}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}
+.items-center{align-items:center}.justify-end{justify-content:flex-end}
+.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mb-3{margin-bottom:.75rem}
+.no-print{}
 
-/* Tab button (pill) */
-.rw-tab{
-  appearance:none;
-  font-weight:600;
-  border:1px solid transparent;
-  border-radius:9999px;
-  padding:.5rem .875rem;
-  color:#334155;                       /* slate-600 */
-  background:transparent;
-  cursor:pointer;
-}
-.rw-tab:hover{ background:#e2e8f0; }   /* slate-200 */
-.rw-tab.active{
-  background:var(--rw-primary-600);
-  color:#fff;
-  border-color:var(--rw-primary-600);
-  box-shadow:0 1px 2px rgba(0,0,0,.05);
-}
-
-/* Card header */
-.rw-card__header{
-  background:var(--rw-card-head-bg);
-  color:var(--rw-card-head-fg);
-  border-bottom:1px solid var(--rw-card-head-border);
-  margin:-1rem -1rem .75rem;
-  padding:.75rem 1rem;
-  border-top-left-radius:var(--rw-card-radius-xl);
-  border-top-right-radius:var(--rw-card-radius-xl);
-}
-.rw-card__title{ font-weight:700; font-size:1.125rem; line-height:1.5rem; } /* ~text-lg */
-
-/* Compact buttons for tight toolbars */
-.rw-btn--sm{
-  --rw-btn-h:34px; --rw-btn-px:12px; --rw-btn-fs:.8125rem; --rw-btn-radius:8px;
-}
-.rw-btn--sm .rw-icon{ width:16px; height:16px; }
-
-/* tabs ribbon */
-.tabs-bar{ background:#eff6ff; border-bottom:1px solid #dbeafe; border-top-left-radius:.75rem; border-top-right-radius:.75rem; padding:.5rem; margin:-1rem -1rem 1rem; }
+/* ---- Preserve existing helper classes already used in templates --------- */
+.tab-button{ /* keep existing weight from your old CSS */ font-weight:700 }
+.tab-content{ /* keep visibility behavior from your old CSS */ }
+.bad{ outline:2px solid #ef4444; outline-offset:0; background:#fff1f2 }
+@media print{ body *{visibility:hidden} #quote,#quote *{visibility:visible} #quote{position:absolute;inset:0;width:100%;margin:0;box-shadow:none} }
