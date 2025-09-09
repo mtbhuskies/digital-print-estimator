@@ -6,8 +6,8 @@
 <label>Size (WxH) <input class="mt-1 w-full border rounded-md p-2" id="invSize" placeholder="13x19"/></label>
 <label>Sheets on hand <input class="mt-1 w-full border rounded-md p-2" id="invSheets" type="number" value="0"/></label>
 <label>Reorder point <input class="mt-1 w-full border rounded-md p-2" id="invReorder" type="number" value="0"/></label>
-<button class="rw-btn rw-btn--positive" id="btnInvAdd">Add / Update</button>
-<button class="rw-btn rw-btn--danger" id="btnInvClear">Clear All</button>
+<button class="rw-btn rw-btn--positive justify-self-end" id="btnInvAdd">Add / Update</button>
+<button class="rw-btn rw-btn--danger   justify-self-end" id="btnInvClear">Clear All</button>
 </div>
 <div class="mt-3 overflow-auto">
 <table class="w-full text-sm">
@@ -26,19 +26,19 @@
 <legend class="px-2 font-semibold">Paper Catalog</legend>
 <div class="grid grid-cols-4 gap-2 text-sm items-end">
 <label class="col-span-2">WCP Code <input class="mt-1 w-full border rounded-md p-2" id="catCode" placeholder="TR2DDW17100HPC"/></label>
-<button class="rw-btn rw-btn--secondary" id="btnCatOpen">Open WCP Page</button>
-<button class="rw-btn rw-btn--positive" id="btnCatAdd">Add to Catalog (+Inventory)</button>
+<button class="rw-btn rw-btn--secondary justify-self-end" id="btnCatOpen">Open WCP Page</button>
+<button class="rw-btn rw-btn--positive justify-self-end" id="btnCatAdd">Add to Catalog (+Inventory)</button>
 <label class="col-span-2">Name <input class="mt-1 w-full border rounded-md p-2" id="catName" placeholder="Cougar Smooth 100C Digital"/></label>
 <label>Size (WxH) <input class="mt-1 w-full border rounded-md p-2" id="catSize" placeholder="13x19"/></label>
 <label>Sheets/ctn <input class="mt-1 w-full border rounded-md p-2" id="catSheets" type="number" value="500"/></label>
 <label>Price/1000 <input class="mt-1 w-full border rounded-md p-2" id="catPricePerThou" step="0.01" type="number" value="0"/></label>
 <label>Carton Price <input class="mt-1 w-full border rounded-md p-2" id="catCartonPrice" step="0.01" type="number" value="0"/></label>
 <label>$ per sheet (auto) <input class="mt-1 w-full border rounded-md p-2 bg-gray-100" id="catPerSheet" readonly=""/></label>
-<button class="rw-btn rw-btn--secondary" id="btnCatExport">Export CSV</button>
-<label class="rw-btn rw-btn--secondary cursor-pointer text-center">Import CSV
+<button class="rw-btn rw-btn--secondary justify-self-end" id="btnCatExport">Export CSV</button>
+<label class="rw-btn rw-btn--secondary cursor-pointer text-center justify-self-end">Import CSV
                 <input accept=".csv" class="hidden" id="catImport" type="file"/>
 </label>
-<button class="rw-btn rw-btn--danger" id="btnCatClear">Clear Catalog</button>
+<button class="rw-btn rw-btn--danger justify-self-end" id="btnCatClear">Clear Catalog</button>
 </div>
 <div class="mt-3 overflow-auto">
 <table class="w-full text-sm">
