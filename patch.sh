@@ -2,54 +2,60 @@
 set -euo pipefail
 
 HDR="src/partials/header.html"
+DIST="dist/printing_estimator.build.html"   # optional, if you ship the built file
 
-# safety backup
-cp -n "$HDR" "${HDR}.bak" 2>/dev/null || true
-
-# Canonical toolbar (use --primary for blue)
-read -r -d '' TB <<'HTML'
-<div class="mt-3 flex gap-2 justify-end no-print" id="dashToolbar">
+# Canonical toolbar (small, bottom-right, consistent with your palette)
+read -r -d '' TOOLBAR <<'HTML'
+<div class="mt-3 flex gap-2 justify-end no-print">
   <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashUndo">Undo</button>
   <button class="rw-btn rw-btn--secondary rw-btn--sm" id="dashQuote">Quote</button>
-  <button class="rw-btn rw-btn--primary  rw-btn--sm" id="dashBook">Book</button>
-  <button class="rw-btn rw-btn--primary  rw-btn--sm" id="dashSave">Save</button>
+  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashBook">Book</button>
+  <button class="rw-btn rw-btn--positive  rw-btn--sm" id="dashSave">Save</button>
 </div>
 HTML
 
-# 1) Remove ANY existing dashboard toolbars (defensive dedupe)
-#    Anything with any of the 4 ids or the dashToolbar container.
-usrperl=/usr/bin/perl
-"$usrperl" -0777 -i -pe '
-  s{
-    \n\s*<div[^>]*\b(?:id="dashToolbar"|class="[^"]*\bflex\b[^"]*")[^>]*>
-    (?:(?!</div>).)*?(?:id="dashUndo"|id="dashQuote"|id="dashBook"|id="dashSave")
-    (?:(?!</div>).)*?</div>\s*
-  }{}gsx;
-' "$HDR"
-
-# 2) Try to insert after the alerts block if present
-TB="$TB" "$usrperl" -0777 -i -pe '
-  my $tb = $ENV{TB};
-  s{(<div\s+class="[^"]*\bmt-3\b[^"]*\btext-xs\b[^"]*"\s+id="dbAlerts"></div>)}{$1\n$tb\n}s;
-' "$HDR"
-
-# 3) If still no toolbar (no dbAlerts anchor), insert before </section> of #dashboard
-if ! grep -q 'id="dashToolbar"' "$HDR"; then
-  TB="$TB" "$usrperl" -0777 -i -pe '
+fix_file () {
+  local f="$1"
+  [ -f "$f" ] || return 0
+  /usr/bin/perl -0777 -i -pe '
     my $tb = $ENV{TB};
+
+    # operate only within <section id="dashboard">…</section>
     s{
-      (<section[^>]*\bid="dashboard"[^>]*>)
-      (.*?)
-      (</section>)
+      (<section\b[^>]*\bid="dashboard"[^>]*>)(.*?)(</section>)
     }{
-      my ($open,$body,$close)=($1,$2,$3);
-      $body =~ /id="dashToolbar"/ ? "$open$body$close" : "$open$body\n$tb\n$close";
-    }gse
-  ' "$HDR"
-fi
+      my ($pre,$body,$post)=($1,$2,$3);
 
-# 4) Final sanity: show counts
-echo -n "dashToolbar count: "; grep -c 'id="dashToolbar"' "$HDR" || true
-echo -n "dashSave     count: "; grep -c 'id="dashSave"' "$HDR" || true
+      # 1) remove ANY existing toolbar div that contains a dash* button
+      $body =~ s{
+        \n\s*<div[^>]*>\s*
+          (?:(?!</div>).)*
+          (?:id="dashUndo"|id="dashQuote"|id="dashBook"|id="dashSave")
+          (?:(?!</div>).)*
+        </div>\s*
+      }{}gs;
 
-echo "[OK] Exactly one dashboard toolbar ensured in $HDR"
+      # 2) if no Save button remains, insert one compact toolbar after #dbAlerts
+      if ($body !~ /id="dashSave"/) {
+        $body =~ s{
+          (<div\b[^>]*\bid="dbAlerts"[^>]*></div>)
+        }{$1\n$tb\n}s;
+      }
+      $pre.$body.$post;
+    }egsx;
+  ' "$f"
+  echo "repaired: $f"
+}
+
+export TB="$TOOLBAR"
+fix_file "$HDR"
+fix_file "$DIST"   # harmless if the file isn’t present
+
+# sanity
+for f in "$HDR" "$DIST"; do
+  [ -f "$f" ] || continue
+  echo -n "check: $f  -> "
+  /usr/bin/grep -c 'id="dashSave"' "$f" || true
+done
+
+echo "Done. One toolbar in Job Dashboard."
