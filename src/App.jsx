@@ -519,9 +519,12 @@ function LineCard({ line, onChange, onDuplicate, onDelete, presets, inventory })
             </div>
           </div>
 
-          {/* Right: 2/5 width diagram; metrics + Allow rotate below */}
-          <div className="md:col-span-2">
-            <LayoutDiagram
+          
+    {/* Right: 2/5 width diagram; metrics + Allow rotate below */}
+          
+    <div className="justify-self-start">
+    <LayoutDiagram compact={true}
+  
               compact={true}
               line={{...line, _onChangeRotate:(checked)=>onChange({...line, allowRotate:checked})}}/>
           </div>
@@ -741,7 +744,7 @@ function PresetsPage({ presets, setPresets }){
         {!selected ? (
           <div className="text-sm text-stone-600">Select a preset on the left, or click “Add New”.</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-6 items-start">
             {/* Fields (3/5) */}
             <div className="sm:col-span-3 space-y-3">
               <Section title="Preset Details">
@@ -805,8 +808,8 @@ function PresetsPage({ presets, setPresets }){
             </div>
 
             {/* Diagram (right of details, compact, no metrics) */}
-            <div className="sm:col-span-2">
-              {previewLine && <LayoutDiagram line={previewLine} showMetrics={false} compact={true} />}
+            <div className="justify-self-start">">
+              {previewLine && <LayoutDiagram line={previewLine} showMetrics={false} compact={true} /> }
             </div>
           </div>
         )}
