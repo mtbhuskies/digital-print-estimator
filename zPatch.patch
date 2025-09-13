@@ -1,117 +1,406 @@
-*** a/src/App.jsx
---- b/src/App.jsx
-@@
--function LayoutDiagram({ line }){
-+function LayoutDiagram({ line, showMetrics = true, compact = false }){
+--- App.jsx
++++ App.jsx
+@@ -16,6 +16,16 @@
+   secTitle: "text-[12px] font-semibold text-stone-700",
+   subTitle: "text-[11px] text-stone-500"
+ };
++
++/* tiny helpers for keyboard nudges (F14) */
++const nudger = (e, step, toNumber=(v)=>Number(v)||0) => {
++  if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
++  e.preventDefault();
++  const cur = toNumber(e.currentTarget.value);
++  e.currentTarget.value = (cur + (e.key==="ArrowUp"? +step : -step)).toString();
++  e.currentTarget.dispatchEvent(new Event("input", { bubbles: true }));
++};
++
+@@ -388,6 +398,12 @@
+ function LineCard({ line, onChange, onDuplicate, onDelete, presets, inventory }){
+   const costs=useMemo(()=>computeLineCosts(line),[line]);
+   const qtys=(presets.find(p=>p.id===line.presetId)?.qtyBreaks)||[50,100,250,500,1000,2500];
++  /* C9 focus name after duplicate; F13 predicates */
++  const nameRef = useRef(null);
++  useEffect(()=>{ if(line.focusName && nameRef.current){ nameRef.current.focus(); nameRef.current.select(); onChange({...line, focusName:false}); } },[line.focusName]);
++  const invalidQty = !Number.isFinite(line.qty) || line.qty<=0;
++  const invalidSize = !line.sizeIN?.w || !line.sizeIN?.h || line.sizeIN.w<=0 || line.sizeIN.h<=0;
++  const priceDisabled = invalidQty || invalidSize;
+@@ -408,7 +424,11 @@
+         <div className="grid grid-cols-12 md:gap-3 gap-2 items-end">
+           <div className="col-span-12 md:col-span-7">
+             <Field label="Name">
+-              <Input value={line.name||""} onChange={(e)=>onChange({...line, name:e.target.value})} placeholder="e.g., Business Cards for Spring Promo"/>
++              {/* C9: native input for focus/select */}
++              <input ref={nameRef} className="h-field w-full pad-v rounded-md border text-sm px-3 transition outline-none border-stone-300 focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500"
++                     value={line.name||""}
++                     onChange={(e)=>onChange({...line, name:e.target.value})}
++                     placeholder="e.g., Business Cards for Spring Promo"/>
+             </Field>
+           </div>
+           <div className="col-span-6 md:col-span-2">
+@@ -416,7 +436,9 @@
+-              <Input inputMode="numeric" value={line.qty} onChange={(e)=>onChange({...line, qty: Number(e.target.value)||0})}/>
++              <Input inputMode="numeric" value={line.qty}
++                     onKeyDown={(e)=>nudger(e,25,(v)=>Number(v)||0)}
++                     onChange={(e)=>onChange({...line, qty: Number(e.target.value)||0})}/>
++              {invalidQty && <div className="mt-1 text-[11px] text-rose-600">Enter a quantity &gt; 0</div>}
+             </Field>
+           </div>
+           <div className="col-span-6 md:col-span-3 flex md:hidden justify-end gap-2">
+@@ -444,11 +466,25 @@
+             {/* Preset row */}
+             <div className="grid grid-cols-12 gap-2 md:gap-3 items-end">
+               <div className="col-span-12 lg:col-span-6">
+-                <Field label="Preset">
+-                  <Select value={line.presetId||""} onChange={(e)=>applyPreset(e.target.value)}>
+-                    <option value="">Custom</option>
+-                    {presets.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+-                  </Select>
++                {/* C7: preset autocomplete via datalist; quick-apply by name */}
++                <Field label="Preset">
++                  <input list={`preset-list-${line.id}`} className="h-field w-full rounded-md border text-sm px-3 border-stone-300 focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500"
++                         placeholder="Type to search presets"
++                         defaultValue={presets.find(p=>p.id===line.presetId)?.name||""}
++                         onChange={(e)=>{
++                           const byName = presets.find(p=>p.name.toLowerCase()===e.target.value.toLowerCase());
++                           if(byName) applyPreset(byName.id);
++                         }}/>
++                  <datalist id={`preset-list-${line.id}`}>
++                    <option value="Custom"></option>
++                    {presets.map(p=><option key={p.id} value={p.name}></option>)}
++                  </datalist>
+                 </Field>
+               </div>
+               <div className="col-span-6 lg:col-span-3">
+                 <Field label="Sides"><Input inputMode="numeric" value={line.sides} onChange={(e)=>onChange({...line, sides: Number(e.target.value)||1})}/></Field>
+               </div>
+@@ -462,20 +498,45 @@
+               <div className="col-span-12 md:col-span-6">
+                 <Field label="Paper (from Inventory)">
+                   <Select value={line.substrateSku} onChange={(e)=>changePaper(e.target.value)}>
+                     {inventory.map(s=><option key={s.sku} value={s.sku}>{s.name} ({s.sku})</option>)}
+                   </Select>
+                 </Field>
+               </div>
+               <div className="col-span-6 md:col-span-3">
+                 <Field label="Sheet Width" hint="in">
+-                  <Input value={Number((effSheetWIn||0).toFixed(3))}
+-                         onChange={(e)=>onChange({...line, sheetWOverrideIN: Number(e.target.value)||0})}
+-                         suffix="in" inputMode="decimal"/>
++                  {/* C8: lock disables manual override; F14: 1/8” nudge */}
++                  <Input value={Number((effSheetWIn||0).toFixed(3))}
++                         disabled={!!line.sheetLocked}
++                         onChange={(e)=>onChange({...line, sheetWOverrideIN: Number(e.target.value)||0})}
++                         onKeyDown={(e)=>nudger(e,0.125,(v)=>Number(v)||0)}
++                         suffix="in" inputMode="decimal"/>
+                 </Field>
+               </div>
+               <div className="col-span-6 md:col-span-3">
+                 <Field label="Sheet Height" hint="in">
+-                  <Input value={Number((effSheetHIn||0).toFixed(3))}
+-                         onChange={(e)=>onChange({...line, sheetHOverrideIN: Number(e.target.value)||0})}
+-                         suffix="in" inputMode="decimal"/>
++                  {/* C8 */}
++                  <Input value={Number((effSheetHIn||0).toFixed(3))}
++                         disabled={!!line.sheetLocked}
++                         onChange={(e)=>onChange({...line, sheetHOverrideIN: Number(e.target.value)||0})}
++                         onKeyDown={(e)=>nudger(e,0.125,(v)=>Number(v)||0)}
++                         suffix="in" inputMode="decimal"/>
+                 </Field>
+               </div>
++              {/* C8: Lock/Unlock control */}
++              <div className="col-span-12">
++                <button type="button" className={`${TOK.btn} ${TOK.btnGhost} !h-7 !px-2`}
++                        title={line.sheetLocked?"Sizes locked to inventory. Click to unlock for manual override.":"Manual override active. Click to relock to inventory size."}
++                        onClick={()=>{
++                          if(line.sheetLocked){
++                            onChange({...line, sheetLocked:false});
++                          }else{
++                            const invPaper = inventory.find(s=>s.sku===line.substrateSku);
++                            const invSz = invPaper ? parseSizeInches(invPaper.size) : null;
++                            const fb = findSubstrateFallback(line.substrateSku).size;
++                            onChange({...line, sheetLocked:true,
++                              sheetWOverrideIN: invSz?invSz.w:mmToIn(fb.wMM),
++                              sheetHOverrideIN: invSz?invSz.h:mmToIn(fb.hMM)
++                            });
++                          }
++                        }}>
++                  {line.sheetLocked ? "🔒 Locked to inventory size" : "🔓 Manual override (sheet size)"}
++                </button>
++              </div>
+             </div>
+@@ -484,26 +545,41 @@
+             <div className="grid grid-cols-12 gap-2 md:gap-3 items-end">
+               <div className="col-span-6 md:col-span-3">
+                 <Field label="Width" hint="in">
+                   <Input value={line.sizeIN.w}
+-                         onChange={(e)=>onChange({...line, sizeIN:{...line.sizeIN, w:Number(e.target.value)||0}})}
++                         onChange={(e)=>onChange({...line, sizeIN:{...line.sizeIN, w:Number(e.target.value)||0}})}
++                         onKeyDown={(e)=>nudger(e,0.0625,(v)=>Number(v)||0)}
+                          suffix="in" inputMode="decimal"/>
+                 </Field>
+               </div>
+               <div className="col-span-6 md:col-span-3">
+                 <Field label="Height" hint="in">
+                   <Input value={line.sizeIN.h}
+-                         onChange={(e)=>onChange({...line, sizeIN:{...line.sizeIN, h:Number(e.target.value)||0}})}
++                         onChange={(e)=>onChange({...line, sizeIN:{...line.sizeIN, h:Number(e.target.value)||0}})}
++                         onKeyDown={(e)=>nudger(e,0.0625,(v)=>Number(v)||0)}
+                          suffix="in" inputMode="decimal"/>
+                 </Field>
+               </div>
+               <div className="col-span-6 md:col-span-3">
+                 <Field label="Bleed" hint="in">
+                   <Input value={line.bleedIN||0.125}
+-                         onChange={(e)=>onChange({...line, bleedIN:Number(e.target.value)||0})}
++                         onChange={(e)=>onChange({...line, bleedIN:Number(e.target.value)||0})}
++                         onKeyDown={(e)=>nudger(e,0.0625,(v)=>Number(v)||0)}
+                          suffix="in" inputMode="decimal"/>
+                 </Field>
+               </div>
+               <div className="col-span-6 md:col-span-3">
+                 <Field label="Gutter" hint="in">
+                   <Input value={line.gutterIN||0.125}
+-                         onChange={(e)=>onChange({...line, gutterIN:Number(e.target.value)||0})}
++                         onChange={(e)=>onChange({...line, gutterIN:Number(e.target.value)||0})}
++                         onKeyDown={(e)=>nudger(e,0.0625,(v)=>Number(v)||0)}
+                          suffix="in" inputMode="decimal"/>
+                 </Field>
+               </div>
++              {/* F13 size validation hint */}
++              {invalidSize && <div className="col-span-12 text-[11px] text-rose-600">Enter a valid piece size (W×H &gt; 0).</div>}
+             </div>
++
++            {/* C10: Finishing chooser with per-step preview and total */}
++            <div className="grid grid-cols-12 gap-2 md:gap-3">
++              <div className="col-span-12">
++                <div className={TOK.secTitle}>Finishing</div>
++                <div className="mt-1 grid sm:grid-cols-2 gap-2">
++                  {FINISHING.map(step=>{
++                    const checked = (line.finishingStepIds||[]).includes(step.id);
++                    const stepCost = (step.setupMinutes/60)*DEVICE.overheadPerHour + step.costPerUnit*(line.qty||0);
++                    return (
++                      <label key={step.id} className="border rounded-md p-2 flex items-center justify-between">
++                        <span className="flex items-center gap-2">
++                          <input type="checkbox" className="accent-indigo-600" checked={checked}
++                                 onChange={(e)=>{
++                                   const next = new Set(line.finishingStepIds||[]);
++                                   e.target.checked ? next.add(step.id) : next.delete(step.id);
++                                   onChange({...line, finishingStepIds:[...next]});
++                                 }}/>
++                          <span className="text-sm">{step.name}</span>
++                        </span>
++                        <span className="text-[12px] text-stone-600">${stepCost.toFixed(2)}</span>
++                      </label>
++                    );
++                  })}
++                </div>
++                <div className="mt-1 text-[12px] text-stone-700">Finishing total: <span className="font-semibold">${costs.finishingCost.toFixed(2)}</span></div>
++              </div>
++            </div>
+           </div>
+@@ -522,16 +598,37 @@
+-      {/* Pricing — (unchanged; no "Substrate (for costing)" field) */}
+-      <Section title="Pricing" subtitle="Adjust margin, then pick a break">
++      {/* Pricing */}
++      <Section title="Pricing" subtitle="Adjust margin, then pick a break">
+         <div className="grid grid-cols-12 md:gap-3 gap-2 items-end">
+           <div className="col-span-6 md:col-span-10"></div>
+           <div className="col-span-6 md:col-span-2">
+             <Field label="Margin %">
+-              <Input inputMode="decimal" value={Math.round((line.marginPct||0)*100)} onChange={(e)=>onChange({...line, marginPct: (Number(e.target.value)||0)/100})} suffix="%"/>
++              {/* A2: live unit price pill + guardrail */}
++              <div className="flex items-center gap-2">
++                <Input inputMode="decimal" value={Math.round((line.marginPct||0)*100)} onChange={(e)=>onChange({...line, marginPct: (Number(e.target.value)||0)/100})} suffix="%"/>
++                <span className={`inline-flex items-center px-2 h-8 rounded-md border text-xs ${ (line.marginPct||0) < 0.35 ? 'border-rose-300 text-rose-700 bg-rose-50' : 'border-stone-300 text-stone-700 bg-stone-50'}`}>
++                  {priceDisabled ? '—/ea' : `${money(costs.sell/(line.qty||1))}/ea`}
++                </span>
++              </div>
++              {(line.marginPct||0) < 0.35 && <div className="mt-1 text-[11px] text-rose-600">Below 35% margin</div>}
+             </Field>
+           </div>
+         </div>
+ 
+         <div className="mt-2">
+-          <div className={TOK.label}>Unit price by quantity</div>
+-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
++          <div className={TOK.label}>Unit price by quantity</div>
++          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+             {qtys.map(q=>{
+-              const preview = computeLineCosts({ ...line, qty:q });
+-              const unit = preview.sell / q;
++              const preview = computeLineCosts({ ...line, qty:q });
++              const unit = preview.sell / q;
+               const active = q===line.qty;
+               return (
+                 <button key={q} onClick={()=>onChange({...line, qty:q})}
+                   className={`${TOK.chip} ${active?"bg-indigo-600 text-white border-indigo-600":"bg-white border-stone-300 hover:bg-stone-50"}`}>
+                   <div className="text-[10px] opacity-80">{q} qty</div>
+                   <div className="text-sm font-semibold">{money(unit)}</div>
++                  {/* A3: total under each chip */}
++                  <div className="text-[10px] opacity-80">{money(preview.sell)} total</div>
+                 </button>
+               );
+             })}
+           </div>
++          {/* A1: collapsible Cost Breakdown */}
++          <details className="mt-3">
++            <summary className="cursor-pointer text-sm text-stone-700">Cost breakdown</summary>
++            {(() => { const c = computeLineCosts(line); return (
++              <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[12px]">
++                <div className="flex justify-between"><span>Substrate</span><span className="font-semibold">{money(c.substrateCost)}</span></div>
++                <div className="flex justify-between"><span>Clicks</span><span className="font-semibold">{money(c.clicksCost)}</span></div>
++                <div className="flex justify-between"><span>Setup</span><span className="font-semibold">{money(c.setupCost)}</span></div>
++                <div className="flex justify-between"><span>Overhead</span><span className="font-semibold">{money(c.overheadCost)}</span></div>
++                <div className="flex justify-between"><span>Finishing</span><span className="font-semibold">{money(c.finishingCost)}</span></div>
++                <div className="flex justify-between border-t pt-1"><span>Base cost</span><span className="font-semibold">{money(c.baseCost)}</span></div>
++                <div className="flex justify-between border-t pt-1"><span>Sell</span><span className="font-semibold">{money(c.sell)}</span></div>
++                <div className="flex justify-between"><span>Unit price</span><span className="font-semibold">{money(c.sell/(line.qty||1))}</span></div>
++              </div>
++            ); })()}
++          </details>
+         </div>
+       </Section>
+     </div>
+@@ -592,6 +689,33 @@
+ function JobPage({ presets }){
+   const [inventory]=useState(()=>{
+     return loadInventory();
+   });
++  /* C12 heading fields + C11 tax state (persisted) */
++  const [cust,setCust]=useState(()=>localStorage.getItem("job.customer")||"");
++  const [jobTitle,setJobTitle]=useState(()=>localStorage.getItem("job.title")||"");
++  const [taxPct,setTaxPct]=useState(()=>Number(localStorage.getItem("job.taxPct")||0));
+@@ -612,7 +736,8 @@
+-  const totals = React.useMemo(()=>lines.reduce((s,l)=>s+computeLineCosts(l).sell,0),[lines]);
++  const totals = React.useMemo(()=>lines.reduce((s,l)=>s+computeLineCosts(l).sell,0),[lines]);
++  const grand  = useMemo(()=> totals * (1 + (Number(taxPct)||0)/100 ), [totals, taxPct]);
+@@ -624,6 +749,23 @@
+   return (
+     <div className="mx-auto max-w-7xl md:pl-20 px-4 md:px-8 grid grid-cols-1 lg:grid-cols-[1fr,18rem] gap-6 items-start">
+       <div className="space-y-4">
++        {/* C12: Customer / Job Title header */}
++        <div className={`${TOK.card} p-4`}>
++          <div className="grid grid-cols-12 gap-2 md:gap-3">
++            <div className="col-span-12 md:col-span-6">
++              <Field label="Customer">
++                <Input value={cust} onChange={(e)=>{ setCust(e.target.value); localStorage.setItem("job.customer", e.target.value); }}/>
++              </Field>
++            </div>
++            <div className="col-span-12 md:col-span-6">
++              <Field label="Job Title">
++                <Input value={jobTitle} onChange={(e)=>{ setJobTitle(e.target.value); localStorage.setItem("job.title", e.target.value); }}/>
++              </Field>
++            </div>
++          </div>
++        </div>
+         {lines.map(line=>(
+           <LineCard key={line.id}
+             line={line} presets={presets} inventory={loadInventory()}
+             onChange={(patch)=>updateLine(line.id,patch)}
+-            onDuplicate={()=>setLines(prev=>[...prev,{...line,id:crypto.randomUUID(), name: (line.name||'Copy')+' (copy)'}])}
++            onDuplicate={()=>setLines(prev=>[...prev,{...line,id:crypto.randomUUID(), name: (line.name||'Copy')+' (copy)', focusName:true }])}
+             onDelete={()=>setLines(prev=>prev.filter(l=>l.id!==line.id))}
+           />
+         ))}
+@@ -638,10 +780,17 @@
+       <aside className="sticky top-16 self-start">
+         <div className="bg-white/95 backdrop-blur rounded-[var(--radius)] p-4 border border-stone-200 space-y-3 w-full lg:w-72">
+           <div className={TOK.h2}>Totals</div>
+-          <div className="flex justify-between text-sm"><span>Items</span><span>{money(totals)}</span></div>
+-          <div className="border-t pt-2 flex justify-between font-semibold"><span>Grand Total</span><span>{money(totals)}</span></div>
++          {/* C11: headline + tax input + computed grand */}
++          <div className="text-[13px] font-semibold text-stone-800">You’re quoting: <span className="text-indigo-700">{money(grand)}</span></div>
++          <div className="flex justify-between text-sm"><span>Items</span><span>{money(totals)}</span></div>
++          <div className="flex items-center justify-between text-sm">
++            <span>Tax %</span>
++            <input className="h-8 w-20 rounded-md border text-sm px-2 border-stone-300 focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500"
++                   inputMode="decimal" value={taxPct}
++                   onChange={(e)=>{ const v=Number(e.target.value)||0; setTaxPct(v); localStorage.setItem("job.taxPct", String(v)); }} />
++          </div>
++          <div className="border-t pt-2 flex justify-between font-semibold"><span>Grand Total</span><span>{money(grand)}</span></div>
+           <div className="mt-3 grid grid-cols-2 gap-2">
+             <button className={`${TOK.btn} ${TOK.btnPri}`}>Send / Preview</button>
+             <button className={`${TOK.btn} ${TOK.btnSec}`}>Convert to Job</button>
+           </div>
+         </div>
+       </aside>
+@@ -292,6 +292,36 @@
+ function LayoutDiagram({ line, showMetrics = true, compact = false }){
    const [wrapRef, wrapW]=useContainerWidth();
  
    const sheet = effectiveSheetSizeMM(line);
    const sheetW = sheet.wMM, sheetH = sheet.hMM;
-@@
--  const PAD=8, maxW=Math.max(160, wrapW||240), maxH=240; // fits narrow column; scales with container
--  const scale=Math.min((maxW-PAD*2)/sheetW,(maxH-PAD*2)/sheetH);
--  const toPx=(mm)=>mm*scale;
-+  // sizing: compact (tight gray box, presets) vs responsive (job)
-+  const PAD = 8;
-+  const maxH = 240;
-+  const maxW = Math.max(160, wrapW||240);
-+  const scale = compact
-+    ? (maxH - PAD*2) / sheetH
-+    : Math.min((maxW - PAD*2) / sheetW, (maxH - PAD*2) / sheetH);
-+  const toPx = (mm)=>mm*scale;
-+  const svgW = compact ? (toPx(sheetW) + PAD*2) : maxW;
-@@
--  return (
--    <div ref={wrapRef} className="mt-1">
--      <div className="flex items-center justify-between">
--        <div className="text-[12px] font-semibold text-stone-700">Layout Diagram</div>
--        <div className="text-xs text-stone-600">{layout.ups} up · {layout.cols}×{layout.rows} · {layout.rot||0}°</div>
--      </div>
--      <div className="mt-2 bg-stone-50 border border-stone-200 rounded-lg p-2">
--        <svg style={{width: '100%', height: maxH}} viewBox={`0 0 ${maxW} ${maxH}`} preserveAspectRatio="xMidYMid meet">
-+  return (
-+    <div ref={wrapRef} className={`mt-1 ${compact ? "w-fit" : ""}`}>
-+      <div className="text-[12px] font-semibold text-stone-700">Layout Diagram</div>
-+      <div className={`mt-2 ${compact ? "p-1" : "p-2"} bg-stone-50 border border-stone-200 rounded-lg`}>
-+        <svg style={{width: svgW, height: maxH}} viewBox={`0 0 ${svgW} ${maxH}`} preserveAspectRatio="xMidYMid meet">
-           <rect x={PAD} y={PAD} width={toPx(sheetW)} height={toPx(sheetH)} fill="#fff" stroke="#475569" strokeWidth="1"/>
-           {layout.cells.map((cell,i)=>(
-             <g key={i} transform={`translate(${PAD+toPx(cell.x)},${PAD+toPx(cell.y)})`}>
-               <rect width={toPx(cell.w)} height={toPx(cell.h)} rx="4" ry="4" fill="#c7d2fe" stroke="#4338ca"/>
-               <rect x={toPx(bleedMM)} y={toPx(bleedMM)} width={toPx(cell.w-2*bleedMM)} height={toPx(cell.h-2*bleedMM)} fill="#fff" stroke="#1f2937" strokeDasharray="4 3"/>
-             </g>
-           ))}
-         </svg>
+   const pieceWmm = inToMM(line.sizeIN.w);
+   const pieceHmm = inToMM(line.sizeIN.h);
+   const bleedMM = inToMM(line.bleedIN||0);
+   const gutterMM = inToMM(line.gutterIN||0);
+   const layout = React.useMemo(()=>computeLayout({
+     sheetW, sheetH, pieceWmm, pieceHmm, bleedMM, gutterMM, allowRotate: line.allowRotate!==false
+   }), [sheetW,sheetH,pieceWmm,pieceHmm,bleedMM,gutterMM,line.allowRotate]);
+@@ -314,15 +344,47 @@
+   const sheets = Math.ceil((line.qty + Math.ceil(line.qty*0.02)) / Math.max(1, layout.ups));
+   const clicks  = sheets * (line.sides||1);
+   const clickRate = clicksCostForQty(clicks);
++  /* B5: waste % estimation */
++  const sheetArea = sheetW * sheetH;
++  const usedArea  = (layout.cols||0) * (layout.rows||0) * (pieceWmm + 2*bleedMM) * (pieceHmm + 2*bleedMM)
++                    + Math.max(0,(layout.cols-1)) * gutterMM * (layout.rows*(pieceHmm+2*bleedMM))
++                    + Math.max(0,(layout.rows-1)) * gutterMM * (layout.cols*(pieceWmm+2*bleedMM));
++  const wastePct  = sheetArea>0 ? Math.max(0, 1 - (usedArea / sheetArea)) * 100 : 0;
+ 
+   return (
+     <div ref={wrapRef} className={`mt-1 ${compact ? "w-fit" : ""}`}>
+       <div className="text-[12px] font-semibold text-stone-700">Layout Diagram</div>
+       <div className={`mt-2 ${compact ? "p-1" : "p-2"} bg-stone-50 border border-stone-200 rounded-lg`}>
+-        <svg style={{ width: svgW, height: maxH }} viewBox={`0 0 ${svgW} ${maxH}`} preserveAspectRatio="xMidYMid meet">
+-          <rect x={PAD} y={PAD} width={toPx(sheetW)} height={toPx(sheetH)} fill="#fff" stroke="#475569" strokeWidth="1"/>
+-          {layout.cells.map((cell,i)=>(
+-            <g key={i} transform={`translate(${PAD+toPx(cell.x)},${PAD+toPx(cell.y)})`}>
+-              <rect width={toPx(cell.w)} height={toPx(cell.h)} rx="4" ry="4" fill="#c7d2fe" stroke="#4338ca"/>
+-              <rect x={toPx(bleedMM)} y={toPx(bleedMM)} width={toPx(cell.w-2*bleedMM)} height={toPx(cell.h-2*bleedMM)} fill="#fff" stroke="#1f2937" strokeDasharray="4 3"/>
+-            </g>
+-          ))}
+-        </svg>
++        <svg style={{ width: svgW, height: maxH }} viewBox={`0 0 ${svgW} ${maxH}`} preserveAspectRatio="xMidYMid meet">
++          {/* Sheet */}
++          <rect x={PAD} y={PAD} width={toPx(sheetW)} height={toPx(sheetH)} fill="#fff" stroke="#475569" strokeWidth="1"/>
++          {/* B5: Gutter guides */}
++          {Array.from({length: Math.max(0,(layout.cols||0)-1)}).map((_,i)=>(
++            <line key={`gv${i}`} x1={PAD+toPx(layout.offX+(i+1)*(layout.w+gutterMM)-gutterMM/2)}
++                  y1={PAD} x2={PAD+toPx(layout.offX+(i+1)*(layout.w+gutterMM)-gutterMM/2)} y2={PAD+toPx(sheetH)}
++                  stroke="#94a3b8" strokeDasharray="3 3" />
++          ))}
++          {Array.from({length: Math.max(0,(layout.rows||0)-1)}).map((_,i)=>(
++            <line key={`gh${i}`} y1={PAD+toPx(layout.offY+(i+1)*(layout.h+gutterMM)-gutterMM/2)}
++                  x1={PAD} y2={PAD+toPx(layout.offY+(i+1)*(layout.h+gutterMM)-gutterMM/2)} x2={PAD+toPx(sheetW)}
++                  stroke="#94a3b8" strokeDasharray="3 3" />
++          ))}
++          {/* Cells with bleed shading */}
++          {layout.cells.map((cell,i)=>(
++            <g key={i} transform={`translate(${PAD+toPx(cell.x)},${PAD+toPx(cell.y)})`}>
++              <rect width={toPx(cell.w)} height={toPx(cell.h)} rx="4" ry="4" fill="#c7d2fe" stroke="#4338ca"/>
++              {/* bleed shading */}
++              <rect x="0" y="0" width={toPx(cell.w)} height={toPx(bleedMM)} fill="#e2e8f0" />
++              <rect x="0" y={toPx(cell.h-bleedMM)} width={toPx(cell.w)} height={toPx(bleedMM)} fill="#e2e8f0" />
++              <rect x="0" y="0" width={toPx(bleedMM)} height={toPx(cell.h)} fill="#e2e8f0" />
++              <rect x={toPx(cell.w-bleedMM)} y="0" width={toPx(bleedMM)} height={toPx(cell.h)} fill="#e2e8f0" />
++              {/* trimmed piece outline */}
++              <rect x={toPx(bleedMM)} y={toPx(bleedMM)} width={toPx(cell.w-2*bleedMM)} height={toPx(cell.h-2*bleedMM)} fill="#fff" stroke="#1f2937" strokeDasharray="4 3"/>
++            </g>
++          ))}
++          {/* B6: Labels */}
++          <text x={PAD+6} y={PAD+14} fontSize="11" fill="#334155">Sheet: {mmToIn(sheetW).toFixed(2)}×{mmToIn(sheetH).toFixed(2)} in</text>
++          <text x={PAD+6} y={PAD+28} fontSize="11" fill="#334155">Piece: {line.sizeIN.w}×{line.sizeIN.h} in + {line.bleedIN||0}" bleed</text>
++        </svg>
        </div>
--      {/* Restored helper metrics under the diagram */}
--      <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
--        <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Ups</span><span className="font-semibold">{layout.ups}</span></div>
--        <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Sheets</span><span className="font-semibold">{sheets}</span></div>
--        <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Clicks</span><span className="font-semibold">{clicks}</span></div>
--        <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Click rate</span><span className="font-semibold">${clickRate.toFixed(3)}</span></div>
--      </div>
-+      {showMetrics && (
-+        <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
-+          <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Ups</span><span className="font-semibold">{layout.ups}</span></div>
-+          <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Sheets</span><span className="font-semibold">{sheets}</span></div>
-+          <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Clicks</span><span className="font-semibold">{clicks}</span></div>
-+          <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Click rate</span><span className="font-semibold">${clickRate.toFixed(3)}</span></div>
-+        </div>
-+      )}
-       <div className="mt-2">
-         <label className="inline-flex items-center gap-2 text-xs">
-           <input type="checkbox" className="accent-indigo-600"
-                  checked={line.allowRotate!==false}
-                  onChange={(e)=>line._onChangeRotate?.(e.target.checked)}/>
-           Allow rotate
-         </label>
-       </div>
-     </div>
-   );
- }
-*** a/src/App.jsx
---- b/src/App.jsx
-@@
--        {/* 4/5 controls (left) — 1/5 diagram (right) */}
--        <div className="grid grid-cols-1 md:grid-cols-5 md:gap-4 gap-2">
--          {/* Left controls */}
--          <div className="md:col-span-4 space-y-3">
-+        {/* Fields 1fr | Diagram auto (no extra whitespace) */}
-+        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] md:gap-6 gap-2 items-start">
-+          {/* Left controls */}
-+          <div className="space-y-3">
-             {/* Preset row */}
-             <div className="grid grid-cols-12 gap-2 md:gap-3 items-end">
-               <div className="col-span-12 lg:col-span-6">
-@@
--          {/* Right: 1/5 width diagram; metrics + Allow rotate below */}
--          <div className="md:col-span-1">
--            <LayoutDiagram line={{...line, _onChangeRotate:(checked)=>onChange({...line, allowRotate:checked})}}/>
-+          {/* Right: auto-width diagram; metrics + Allow rotate below */}
-+          <div className="justify-self-start">
-+            <LayoutDiagram
-+              compact={true}
-+              line={{...line, _onChangeRotate:(checked)=>onChange({...line, allowRotate:checked})}}
-+            />
-           </div>
+ 
+       {showMetrics && (
+         <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+           <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Ups</span><span className="font-semibold">{layout.ups}</span></div>
+           <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Sheets</span><span className="font-semibold">{sheets}</span></div>
+           <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Clicks</span><span className="font-semibold">{clicks}</span></div>
+           <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Click rate</span><span className="font-semibold">${clickRate.toFixed(3)}</span></div>
++          <div className="border rounded-md px-2 py-1 bg-white flex justify-between"><span>Waste</span><span className="font-semibold">{wastePct.toFixed(1)}%</span></div>
          </div>
-       </Section>
-*** a/src/App.jsx
---- b/src/App.jsx
-@@
--          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
--            {/* Fields (4/5) */}
--            <div className="md:col-span-3 lg:col-span-4 space-y-3">
-+          <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-6 items-start">
-+            {/* Fields */}
-+            <div className="space-y-3">
-               <Section title="Preset Details">
-@@
--            {/* Diagram (1/5) */}
--            <div className="md:col-span-2 lg:col-span-1">
--              {previewLine && <LayoutDiagram line={previewLine} />}
-+            {/* Diagram (compact, no metrics, auto width) */}
-+            <div className="justify-self-start">
-+              {previewLine && <LayoutDiagram line={previewLine} showMetrics={false} compact={true} />}
-             </div>
-           </div>
+       )}
+
